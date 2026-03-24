@@ -24,7 +24,11 @@ function processQueue(error: AxiosError | null, token: string | null): void {
 }
 
 api.interceptors.request.use((config: InternalAxiosRequestConfig) => {
-  const token = localStorage.getItem('accessToken');
+  // Use admin token for admin routes, customer token otherwise
+  const isAdminRoute = config.url?.includes('/admin');
+  const token = isAdminRoute
+    ? localStorage.getItem('adminAccessToken') || localStorage.getItem('accessToken')
+    : localStorage.getItem('accessToken');
   if (token && config.headers) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -52,7 +56,7 @@ api.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        const { data } = await axios.post('/api/auth/refresh', {}, { withCredentials: true });
+        const { data } = await api.post('/auth/refresh', {}, { withCredentials: true });
         const newToken = data.data.accessToken as string;
         localStorage.setItem('accessToken', newToken);
         processQueue(null, newToken);
