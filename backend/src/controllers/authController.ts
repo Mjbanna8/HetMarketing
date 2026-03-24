@@ -15,7 +15,7 @@ export const login = asyncHandler(async (req: Request, res: Response): Promise<v
   res.cookie('refreshToken', result.tokens.refreshToken, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
     maxAge: 30 * 24 * 60 * 60 * 1000,
     path: '/',
   });
@@ -35,7 +35,7 @@ export const verifyOtp = asyncHandler(async (req: Request, res: Response): Promi
   res.cookie('refreshToken', result.tokens.refreshToken, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
     maxAge: 30 * 24 * 60 * 60 * 1000,
     path: '/',
   });
@@ -71,7 +71,7 @@ export const refresh = asyncHandler(async (req: Request, res: Response): Promise
   res.cookie('refreshToken', tokens.refreshToken, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
     maxAge: 30 * 24 * 60 * 60 * 1000,
     path: '/',
   });
@@ -99,7 +99,7 @@ export const adminLogin = asyncHandler(async (req: Request, res: Response): Prom
   res.cookie('refreshToken', result.tokens.refreshToken, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
     maxAge: 8 * 60 * 60 * 1000,
     path: '/',
   });
