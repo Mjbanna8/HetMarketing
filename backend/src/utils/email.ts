@@ -20,24 +20,16 @@ interface EmailOptions {
 
 export async function sendEmail(options: EmailOptions): Promise<void> {
   try {
-    const sendPromise = transporter.sendMail({
+    await transporter.sendMail({
       from: `"WA Commerce" <${config.smtp.user}>`,
       to: options.to,
       subject: options.subject,
       html: options.html,
     });
-
-    // 10-second timeout to prevent API hanging if SMTP is blocked/slow
-    const timeoutPromise = new Promise((_, reject) => {
-      setTimeout(() => reject(new Error('Email sending timed out after 10 seconds')), 10000);
-    });
-
-    await Promise.race([sendPromise, timeoutPromise]);
-    
     logger.info({ to: options.to, subject: options.subject }, 'Email sent successfully');
   } catch (error) {
     logger.error({ error, to: options.to }, 'Failed to send email');
-    throw new Error('Failed to send email: ' + (error instanceof Error ? error.message : String(error)));
+    throw new Error('Failed to send email');
   }
 }
 

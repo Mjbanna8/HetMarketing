@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAdminAuthStore } from '../store';
 import { useAdminSessionWarning } from '../hooks';
-import { authApi } from '../api';
+import { authApi, adminApi } from '../api';
 import toast from 'react-hot-toast';
 
 const navItems = [
@@ -20,6 +20,17 @@ export default function AdminLayout(): React.ReactElement {
   const location = useLocation();
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [userCount, setUserCount] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      adminApi.getUserStats().then(res => {
+        if (res.data?.data?.totalUsers !== undefined) {
+          setUserCount(res.data.data.totalUsers);
+        }
+      }).catch(() => {});
+    }
+  }, [isAuthenticated]);
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -78,8 +89,15 @@ export default function AdminLayout(): React.ReactElement {
                 location.pathname.startsWith(item.path) ? 'bg-primary-50 text-primary-700' : 'text-surface-600 hover:bg-surface-50'
               }`}
             >
-              <span>{item.icon}</span>
-              {item.label}
+              <span className="flex items-center gap-3">
+                <span>{item.icon}</span>
+                {item.label}
+              </span>
+              {item.label === 'Users' && userCount !== null && (
+                <span className="ml-auto bg-primary-100 text-primary-800 text-[10px] font-bold px-2 py-0.5 rounded-full">
+                  {userCount}
+                </span>
+              )}
             </Link>
           ))}
         </nav>

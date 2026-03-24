@@ -6,7 +6,21 @@ import * as authService from '../services/authService.js';
 export const register = asyncHandler(async (req: Request, res: Response): Promise<void> => {
   const result = await authService.registerUser(req.body);
 
-  res.status(201).json(successResponse(result));
+  res.cookie('refreshToken', result.tokens.refreshToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+    maxAge: 30 * 24 * 60 * 60 * 1000,
+    path: '/',
+  });
+
+  res.status(201).json(
+    successResponse({
+      message: result.message,
+      user: result.user,
+      accessToken: result.tokens.accessToken,
+    })
+  );
 });
 
 export const login = asyncHandler(async (req: Request, res: Response): Promise<void> => {
@@ -28,31 +42,7 @@ export const login = asyncHandler(async (req: Request, res: Response): Promise<v
   );
 });
 
-export const verifyOtp = asyncHandler(async (req: Request, res: Response): Promise<void> => {
-  const { userId, otp } = req.body;
-  const result = await authService.verifyOtp(userId, otp);
 
-  res.cookie('refreshToken', result.tokens.refreshToken, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-    maxAge: 30 * 24 * 60 * 60 * 1000,
-    path: '/',
-  });
-
-  res.json(
-    successResponse({
-      user: result.user,
-      accessToken: result.tokens.accessToken,
-    })
-  );
-});
-
-export const resendOtp = asyncHandler(async (req: Request, res: Response): Promise<void> => {
-  const { userId } = req.body;
-  const result = await authService.resendOtp(userId);
-  res.json(successResponse(result));
-});
 
 export const logout = asyncHandler(async (_req: Request, res: Response): Promise<void> => {
   res.clearCookie('refreshToken', { path: '/' });

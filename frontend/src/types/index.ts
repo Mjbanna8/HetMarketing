@@ -100,3 +100,25 @@ export interface ChartData {
   orderChart: Array<{ date: string; orders: number }>;
   categoryChart: Array<{ name: string; count: number }>;
 }
+
+export interface AdminUserStats {
+  totalUsers: number;
+  newUsersToday: number;
+  newUsersThisWeek: number;
+  usersWithOrders: number;
+  usersNoOrders: number;
+}
+
+export interface UserAdminView {
+  id: string;
+  fullName: string;
+  email: string;
+  mobile: string;
+  createdAt: string;
+  totalOrders: number;
+  lastOrderAt: string | null;
+}
+
+export interface UserDetailAdminView extends UserAdminView {
+  orders: Array<Order & { product: { name: string } }>;
+}

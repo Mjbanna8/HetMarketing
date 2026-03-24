@@ -188,7 +188,6 @@ export const updateSettings = asyncHandler(async (req: Request, res: Response): 
   res.json(successResponse(settings));
 });
 
-// Admin Users
 export const getAdminUsers = asyncHandler(async (req: Request, res: Response): Promise<void> => {
   const { search, page, limit } = req.query;
   const pageNum = parseInt(page as string, 10) || 1;
@@ -206,10 +205,22 @@ export const getAdminUsers = asyncHandler(async (req: Request, res: Response): P
     ];
   }
 
-  const [users, total] = await Promise.all([
+  const [usersData, total] = await Promise.all([
     prisma.user.findMany({
       where,
-      select: { id: true, fullName: true, email: true, mobile: true, role: true, isVerified: true, createdAt: true },
+      select: { 
+        id: true, 
+        fullName: true, 
+        email: true, 
+        mobile: true, 
+        createdAt: true,
+        _count: { select: { orders: true } },
+        orders: {
+          select: { createdAt: true },
+          orderBy: { createdAt: 'desc' },
+          take: 1
+        }
+      },
       orderBy: { createdAt: 'desc' },
       skip: (pageNum - 1) * limitNum,
       take: limitNum,
@@ -217,5 +228,115 @@ export const getAdminUsers = asyncHandler(async (req: Request, res: Response): P
     prisma.user.count({ where }),
   ]);
 
+  const users = usersData.map(u => ({
+    id: u.id,
+    fullName: u.fullName,
+    email: u.email,
+    mobile: u.mobile,
+    createdAt: u.createdAt,
+    totalOrders: u._count.orders,
+    lastOrderAt: u.orders.length > 0 ? u.orders[0].createdAt : null,
+  }));
+
   res.json(paginatedResponse(users, total, pageNum, limitNum));
 });
+
+export const getAdminUsersStats = asyncHandler(async (_req: Request, res: Response): Promise<void> => {
+  const { prisma } = await import('../utils/prisma.js');
+  
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const lastWeek = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+  const [totalUsers, newUsersToday, newUsersThisWeek, usersWithOrders] = await Promise.all([
+    prisma.user.count(),
+    prisma.user.count({ where: { createdAt: { gte: today } } }),
+    prisma.user.count({ where: { createdAt: { gte: lastWeek } } }),
+    prisma.user.count({ where: { orders: { some: {} } } }),
+  ]);
+
+  res.json(successResponse({
+    totalUsers,
+    newUsersToday,
+    newUsersThisWeek,
+    usersWithOrders,
+    usersNoOrders: totalUsers - usersWithOrders,
+  }));
+});
+
+export const getAdminUserById = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const { prisma } = await import('../utils/prisma.js');
+  const user = await prisma.user.findUnique({
+    where: { id: req.params.id },
+    include: {
+      orders: {
+        include: { product: { select: { name: true } } },
+        orderBy: { createdAt: 'desc' },
+      },
+      _count: { select: { orders: true } }
+    }
+  });
+
+  if (!user) {
+    res.status(404).json({ success: false, error: 'User not found' });
+    return;
+  }
+  
+  const { passwordHash, ...userWithoutPassword } = user;
+  
+  res.json(successResponse({
+    ...userWithoutPassword,
+    totalOrders: user._count.orders
+  }));
+});
+
+export const deleteAdminUser = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const { prisma } = await import('../utils/prisma.js');
+  const id = req.params.id;
+  
+  if (req.user?.id === id) {
+    res.status(403).json({ success: false, error: 'Cannot delete own account' });
+    return;
+  }
+
+  const user = await prisma.user.findUnique({ where: { id } });
+  if (!user) {
+    res.status(404).json({ success: false, error: 'User not found' });
+    return;
+  }
+
+  await prisma.order.deleteMany({ where: { userId: id } });
+  await prisma.user.delete({ where: { id } });
+
+  console.log(`Admin deleted user: ${user.email} (${user.id}) at ${new Date().toISOString()}`);
+
+  res.json(successResponse({ message: 'User deleted successfully' }));
+});
+
+export const bulkDeleteAdminUsers = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const { prisma } = await import('../utils/prisma.js');
+  const ids: string[] = req.body.ids;
+
+  if (!Array.isArray(ids) || ids.length === 0) {
+    res.status(400).json({ success: false, error: 'No user IDs provided' });
+    return;
+  }
+
+  if (ids.length > 100) {
+    res.status(400).json({ success: false, error: 'Cannot delete more than 100 users at once' });
+    return;
+  }
+
+  if (req.user && ids.includes(req.user.id)) {
+      res.status(403).json({ success: false, error: 'Cannot delete own account' });
+      return;
+  }
+
+  await prisma.order.deleteMany({ where: { userId: { in: ids } } });
+  const { count } = await prisma.user.deleteMany({ where: { id: { in: ids } } });
+
+  console.log(`Admin bulk deleted ${count} users at ${new Date().toISOString()}`);
+
+  res.json(successResponse({ deleted: count, message: `${count} users deleted successfully` }));
+});
+

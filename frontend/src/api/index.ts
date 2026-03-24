@@ -14,7 +14,7 @@ import type {
 // Auth API
 export const authApi = {
   register: (data: { fullName: string; email: string; mobile: string; password: string; confirmPassword: string }) =>
-    api.post<ApiResponse<{ message: string; userId: string }>>('/auth/register', data),
+    api.post<ApiResponse<{ message: string; userId: string; user: import('../types').User; accessToken: string }>>('/auth/register', data),
 
   verifyOtp: (data: { userId: string; otp: string }) =>
     api.post<ApiResponse<{ user: User; accessToken: string }>>('/auth/verify-otp', data),
@@ -156,5 +156,17 @@ export const adminApi = {
 
   // Users
   getUsers: (params?: { search?: string; page?: number; limit?: number }) =>
-    api.get<ApiResponse<PaginatedData<User & { isVerified: boolean; createdAt: string }>>>('/admin/users', { params }),
+    api.get<ApiResponse<PaginatedData<import('../types').UserAdminView>>>('/admin/users', { params }),
+
+  getUserById: (id: string) =>
+    api.get<ApiResponse<import('../types').UserDetailAdminView>>(`/admin/users/${id}`),
+
+  deleteUser: (id: string) =>
+    api.delete<ApiResponse>(`/admin/users/${id}`),
+
+  bulkDeleteUsers: (data: { ids: string[] }) =>
+    api.post<ApiResponse<{ deleted: number }>>('/admin/users/bulk-delete', data),
+
+  getUserStats: () =>
+    api.get<ApiResponse<import('../types').AdminUserStats>>('/admin/users/stats'),
 };

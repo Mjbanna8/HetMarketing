@@ -13,7 +13,6 @@ const ProductDetailPage = lazy(() => import('./pages/ProductDetailPage'));
 const SearchPage = lazy(() => import('./pages/SearchPage'));
 const LoginPage = lazy(() => import('./pages/LoginPage'));
 const RegisterPage = lazy(() => import('./pages/RegisterPage'));
-const VerifyOTPPage = lazy(() => import('./pages/VerifyOTPPage'));
 const ForgotPasswordPage = lazy(() => import('./pages/ForgotPasswordPage'));
 const ResetPasswordPage = lazy(() => import('./pages/ResetPasswordPage'));
 const AccountPage = lazy(() => import('./pages/AccountPage'));
@@ -29,7 +28,7 @@ const AdminProductFormPage = lazy(() => import('./pages/admin/AdminProductFormPa
 const AdminCategoriesPage = lazy(() => import('./pages/admin/AdminCategoriesPage'));
 const AdminOrdersPage = lazy(() => import('./pages/admin/AdminOrdersPage'));
 const AdminSettingsPage = lazy(() => import('./pages/admin/AdminSettingsPage'));
-const AdminUsersPage = lazy(() => import('./pages/admin/AdminUsersPage'));
+const AdminUsersPage = lazy(() => import('./pages/admin/UsersPage'));
 
 function AppInitializer({ children }: { children: React.ReactNode }): React.ReactElement {
   useInitializeAuth();
@@ -54,7 +53,6 @@ export default function App(): React.ReactElement {
                 <Route path="/search" element={<SearchPage />} />
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/register" element={<RegisterPage />} />
-                <Route path="/verify-otp" element={<VerifyOTPPage />} />
                 <Route path="/forgot-password" element={<ForgotPasswordPage />} />
                 <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
                 <Route path="/account" element={<AccountPage />} />
@@ -72,6 +70,7 @@ export default function App(): React.ReactElement {
                 <Route path="products/:id/edit" element={<AdminProductFormPage />} />
                 <Route path="categories" element={<AdminCategoriesPage />} />
                 <Route path="orders" element={<AdminOrdersPage />} />
+                <Route path="users" element={<AdminUsersPage />} />
                 <Route path="settings" element={<AdminSettingsPage />} />
                 <Route path="users" element={<AdminUsersPage />} />
               </Route>

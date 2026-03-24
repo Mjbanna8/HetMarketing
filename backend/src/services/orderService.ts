@@ -203,7 +203,7 @@ export async function getDashboardMetrics(): Promise<{
     prisma.order.count(),
     prisma.order.count({ where: { createdAt: { gte: today } } }),
     prisma.product.count({ where: { isDeleted: false, status: 'OUT_OF_STOCK' } }),
-    prisma.user.count({ where: { isVerified: true } }),
+    prisma.user.count(),
   ]);
 
   return { totalProducts, totalCategories, totalOrders, ordersToday, outOfStockCount, totalUsers };

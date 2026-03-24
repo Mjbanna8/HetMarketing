@@ -86,21 +86,6 @@ app.get('/api/health', (_req, res) => {
 // Error handler (must be last)
 app.use(errorHandler);
 
-// Cron: Clean up abandoned (unverified) registrations every hour
-cron.schedule('0 * * * *', async () => {
-  try {
-    const cutoff = new Date(Date.now() - 60 * 60 * 1000);
-    const result = await prisma.user.deleteMany({
-      where: { isVerified: false, otpExpiresAt: { lt: cutoff } },
-    });
-    if (result.count > 0) {
-      logger.info({ deletedCount: result.count }, '🧹 Cleaned up abandoned registrations');
-    }
-  } catch (err) {
-    logger.error({ error: err }, 'Failed to clean up ghost accounts');
-  }
-});
-
 // Start server
 app.listen(config.port, () => {
   logger.info(`🚀 Server running on port ${config.port} in ${config.nodeEnv} mode`);

@@ -4,13 +4,14 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { authApi } from '../api';
+import { useAuthStore } from '../store';
 import { Spinner } from '../components/Shared';
 import toast from 'react-hot-toast';
 
 const registerSchema = z.object({
-  fullName: z.string().min(2, 'Full name must be at least 2 characters').max(100),
-  email: z.string().email('Please enter a valid email address'),
-  mobile: z.string().regex(/^\+\d{10,15}$/, 'Include country code (e.g., +919999999999)'),
+  fullName: z.string().min(2, 'Full name must be at least 2 characters').max(60, 'Full name must be at most 60 characters').regex(/^[a-zA-Z\s]+$/, 'Name must contain letters only'),
+  email: z.string().email('Please enter a valid email address').toLowerCase(),
+  mobile: z.string().regex(/^\+[1-9]\d{9,14}$/, 'Include valid country code and number (e.g., +919999999999)'),
   password: z.string()
     .min(8, 'Password must be at least 8 characters')
     .regex(/[A-Z]/, 'Must contain an uppercase letter')
@@ -35,6 +36,7 @@ const countryCodeOptions = [
 
 export default function RegisterPage(): React.ReactElement {
   const navigate = useNavigate();
+  const setAuth = useAuthStore((s) => s.setAuth);
   const [loading, setLoading] = useState(false);
   const [countryCode, setCountryCode] = useState('+91');
 
@@ -53,7 +55,7 @@ export default function RegisterPage(): React.ReactElement {
     const hasUpper = /[A-Z]/.test(pass);
     const hasLower = /[a-z]/.test(pass);
     const hasSpecial = /[^A-Za-z0-9]/.test(pass);
-    
+
     if (hasLetters) score = 1;
     if (hasLetters && hasNumbers) score = 2;
     if (hasLetters && hasNumbers && (hasUpper || hasSpecial)) score = 3;
@@ -72,9 +74,10 @@ export default function RegisterPage(): React.ReactElement {
     setLoading(true);
     try {
       const { data } = await authApi.register(formData);
-      if (data.data) {
-        toast.success(data.data.message || 'OTP sent to your email.');
-        navigate(`/verify-otp?userId=${data.data.userId}`, { replace: true });
+      if (data.data && data.data.user && data.data.accessToken) {
+        setAuth(data.data.user, data.data.accessToken);
+        toast.success(data.data.message || 'Account created successfully.');
+        navigate('/', { replace: true });
       }
     } catch (err: unknown) {
       const error = err as { response?: { data?: { error?: string } } };
@@ -139,7 +142,7 @@ export default function RegisterPage(): React.ReactElement {
             <div>
               <label htmlFor="register-password" className="block text-sm font-medium text-surface-700 mb-2">Password</label>
               <input id="register-password" type="password" className={`input-field ${errors.password ? 'border-red-400' : ''}`} placeholder="Min 8 chars, uppercase, number, special" {...register('password')} />
-              
+
               {passwordValue.length > 0 && (
                 <div className="mt-2 flex gap-1 h-1.5 w-full bg-surface-200 rounded-full overflow-hidden">
                   <div className={`h-full transition-all ${strength >= 1 ? (strength === 1 ? 'bg-red-500' : strength === 2 ? 'bg-yellow-500' : strength === 3 ? 'bg-green-400' : 'bg-green-600') : 'bg-transparent'} w-1/4`} />
@@ -156,7 +159,7 @@ export default function RegisterPage(): React.ReactElement {
                   {strength === 4 && 'Strong password'}
                 </p>
               )}
-              
+
               {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password.message}</p>}
             </div>
 

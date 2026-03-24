@@ -65,15 +65,11 @@ export const authGuard = async (req: Request, _res: Response, next: NextFunction
 
     const user = await prisma.user.findUnique({
       where: { id: decoded.id },
-      select: { id: true, email: true, role: true, isVerified: true },
+      select: { id: true, email: true, role: true },
     });
 
     if (!user) {
       throw new UnauthorizedError('User not found');
-    }
-
-    if (!user.isVerified) {
-      throw new ForbiddenError('Please verify your email first');
     }
 
     req.user = { id: user.id, email: user.email, role: user.role };

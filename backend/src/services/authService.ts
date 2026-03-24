@@ -47,82 +47,42 @@ interface UserInfo {
 
 export async function registerUser(
   input: RegisterInput
-): Promise<{ message: string; userId: string }> {
+): Promise<{ message: string; userId: string; user: UserInfo; tokens: AuthTokens }> {
   const { fullName, email, mobile, password } = input;
 
   const existingByEmail = await prisma.user.findUnique({ where: { email } });
   const existingByMobile = await prisma.user.findUnique({ where: { mobile } });
 
-  // Block if a VERIFIED account already owns this email or mobile
-  if (existingByEmail && existingByEmail.isVerified) {
+  if (existingByEmail) {
     throw new ConflictError('An account with this email already exists');
   }
-  if (existingByMobile && existingByMobile.isVerified) {
+  if (existingByMobile) {
     throw new ConflictError('An account with this mobile number already exists');
   }
 
-  const otp = Math.floor(100000 + Math.random() * 900000).toString();
-  const otpHash = await bcrypt.hash(otp, 8);
-  const otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000);
   const passwordHash = await bcrypt.hash(password, 12);
 
-  let userId: string;
+  const user = await prisma.user.create({
+    data: {
+      fullName,
+      email,
+      mobile,
+      passwordHash,
+    },
+    select: { id: true, email: true, role: true, fullName: true, mobile: true },
+  });
 
-  // Ghost account exists (unverified) — update it with fresh credentials & OTP
-  const ghostAccount = existingByEmail || existingByMobile;
-  if (ghostAccount) {
-    await prisma.user.update({
-      where: { id: ghostAccount.id },
-      data: { fullName, email, mobile, passwordHash, otpCode: otpHash, otpExpiresAt },
-    });
-    userId = ghostAccount.id;
-    logger.info({ userId }, 'Ghost account updated with fresh OTP');
-  } else {
-    // Brand new user — create fresh
-    const user = await prisma.user.create({
-      data: {
-        fullName,
-        email,
-        mobile,
-        passwordHash,
-        isVerified: false,
-        otpCode: otpHash,
-        otpExpiresAt,
-      },
-      select: { id: true },
-    });
-    userId = user.id;
-    logger.info({ userId }, 'New user created');
-  }
+  logger.info({ userId: user.id }, 'New user created');
 
-  // Send OTP email (non-blocking)
-  let emailSent = false;
-  try {
-    await sendEmail({
-      to: email,
-      subject: 'Your WA Commerce verification code',
-      html: `
-        <div style="font-family: Arial, sans-serif; padding: 20px;">
-          <h2>Welcome to WA Commerce!</h2>
-          <p>Your verification code is:</p>
-          <h1 style="color: #25D366; letter-spacing: 5px;">${otp}</h1>
-          <p>This code is valid for 10 minutes. Please do not share this code with anyone.</p>
-        </div>
-      `,
-    });
-    emailSent = true;
-  } catch (emailErr) {
-    logger.warn({ userId, error: emailErr }, 'Failed to send OTP email');
-    if (process.env.NODE_ENV === 'development') {
-      logger.info({ userId, otp }, '⚠️ DEV MODE — OTP for manual verification');
-    }
-  }
+  const tokenPayload = { id: user.id, email: user.email, role: user.role as 'CUSTOMER' };
+  const accessToken = generateAccessToken(tokenPayload);
+  const refreshToken = generateRefreshToken(tokenPayload);
 
   return {
-    message: emailSent
-      ? 'OTP sent to your email'
-      : 'Account created. OTP email could not be sent — check server logs for your code.',
-    userId,
+    message: 'Account created successfully',
+    userId: user.id,
+    user: { id: user.id, fullName: user.fullName, email: user.email, mobile: user.mobile, role: user.role },
+    tokens: { accessToken, refreshToken },
   };
 }
 
@@ -183,61 +143,7 @@ export async function loginUser(
   };
 }
 
-export async function verifyOtp(userId: string, otp: string): Promise<{ user: UserInfo; tokens: AuthTokens }> {
-  const user = await prisma.user.findUnique({ where: { id: userId } });
-  if (!user) throw new NotFoundError('User not found');
-  if (user.isVerified) throw new BadRequestError('Already verified');
-  if (!user.otpExpiresAt || user.otpExpiresAt < new Date()) {
-    throw new BadRequestError('OTP expired. Request a new one.');
-  }
 
-  const isValid = await bcrypt.compare(otp, user.otpCode || '');
-  if (!isValid) throw new BadRequestError('Incorrect OTP');
-
-  await prisma.user.update({
-    where: { id: userId },
-    data: { isVerified: true, otpCode: null, otpExpiresAt: null },
-  });
-
-  const tokenPayload = { id: user.id, email: user.email, role: user.role as 'CUSTOMER' };
-  const accessToken = generateAccessToken(tokenPayload);
-  const refreshToken = generateRefreshToken(tokenPayload);
-
-  return {
-    user: { id: user.id, fullName: user.fullName, email: user.email, mobile: user.mobile, role: user.role },
-    tokens: { accessToken, refreshToken },
-  };
-}
-
-export async function resendOtp(userId: string): Promise<{ message: string }> {
-  const user = await prisma.user.findUnique({ where: { id: userId } });
-  if (!user) throw new NotFoundError('User not found');
-  if (user.isVerified) throw new BadRequestError('Already verified');
-
-  const otp = Math.floor(100000 + Math.random() * 900000).toString();
-  const otpHash = await bcrypt.hash(otp, 8);
-  const otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000);
-
-  await prisma.user.update({
-    where: { id: userId },
-    data: { otpCode: otpHash, otpExpiresAt },
-  });
-
-  await sendEmail({
-    to: user.email,
-    subject: 'Your new WA Commerce verification code',
-    html: `
-      <div style="font-family: Arial, sans-serif; padding: 20px;">
-        <h2>Welcome to WA Commerce!</h2>
-        <p>Your new verification code is:</p>
-        <h1 style="color: #25D366; letter-spacing: 5px;">${otp}</h1>
-        <p>This code is valid for 10 minutes. Please do not share this code with anyone.</p>
-      </div>
-    `,
-  });
-
-  return { message: 'New OTP sent' };
-}
 
 export async function refreshTokens(token: string): Promise<AuthTokens> {
   const decoded = verifyRefreshToken(token);

@@ -13,20 +13,23 @@ export default function AdminDashboard(): React.ReactElement {
   const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
   const [chartData, setChartData] = useState<ChartData | null>(null);
   const [latestProducts, setLatestProducts] = useState<Product[]>([]);
+  const [userStats, setUserStats] = useState<import('../../types').AdminUserStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [lastRefreshed, setLastRefreshed] = useState<Date>(new Date());
 
   const loadData = useCallback(async (showLoading = false) => {
     if (showLoading) setLoading(true);
     try {
-      const [metricsRes, chartRes, productsRes] = await Promise.all([
+      const [metricsRes, chartRes, productsRes, statsRes] = await Promise.all([
         adminApi.getMetrics(),
         adminApi.getChart(30),
         adminApi.getProducts({ limit: 5, sort: 'createdAt:desc' }),
+        adminApi.getUserStats(),
       ]);
       if (metricsRes.data.data) setMetrics(metricsRes.data.data);
       if (chartRes.data.data) setChartData(chartRes.data.data);
       if (productsRes.data.data) setLatestProducts(productsRes.data.data.items);
+      if (statsRes.data.data) setUserStats(statsRes.data.data);
       setLastRefreshed(new Date());
     } catch { /* empty */ }
     setLoading(false);
@@ -71,7 +74,8 @@ export default function AdminDashboard(): React.ReactElement {
             { label: 'Total Orders', value: metrics.totalOrders, color: 'bg-purple-50 text-purple-700', link: '/admin/orders' },
             { label: 'Orders Today', value: metrics.ordersToday, color: 'bg-amber-50 text-amber-700', link: '/admin/orders' },
             { label: 'Out of Stock', value: metrics.outOfStockCount, color: 'bg-red-50 text-red-700', link: '/admin/products?status=OUT_OF_STOCK' },
-            { label: 'Registered Users', value: metrics.totalUsers, color: 'bg-teal-50 text-teal-700', link: '/admin/users' },
+            { label: 'Total Users', value: userStats?.totalUsers || metrics.totalUsers, color: 'bg-teal-50 text-teal-700', link: '/admin/users' },
+            { label: 'New Today', value: userStats?.newUsersToday || 0, color: 'bg-indigo-50 text-indigo-700', link: '/admin/users' },
           ].map((card) => (
             <Link key={card.label} to={card.link} className={`rounded-2xl p-5 ${card.color} hover:shadow-md transition-shadow`}>
               <p className="text-sm font-medium opacity-80">{card.label}</p>

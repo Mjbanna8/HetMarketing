@@ -57,6 +57,10 @@ router.get('/settings', adminController.getSettings);
 router.put('/settings', validate(updateSettingsSchema), adminController.updateSettings);
 
 // Users
+router.get('/users/stats', adminController.getAdminUsersStats);
 router.get('/users', adminController.getAdminUsers);
+router.post('/users/bulk-delete', adminController.bulkDeleteAdminUsers);
+router.get('/users/:id', adminController.getAdminUserById);
+router.delete('/users/:id', adminController.deleteAdminUser);
 
 export default router;
