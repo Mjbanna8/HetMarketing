@@ -1,0 +1,12 @@
+{
+  "name": "wa-commerce",
+  "private": true,
+  "version": "1.0.0",
+  "description": "WhatsApp-integrated e-commerce platform",
+  "scripts": {
+    "dev": "concurrently \"cd backend && npm run dev\" \"cd frontend && npm run dev\""
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
