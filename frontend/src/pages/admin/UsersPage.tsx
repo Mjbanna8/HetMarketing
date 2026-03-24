@@ -13,10 +13,8 @@ export default function UsersPage(): React.ReactElement {
   const [stats, setStats] = useState<AdminUserStats | null>(null);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [statsLoading, setStatsLoading] = useState(true);
   const [search, setSearch] = useState(searchParams.get('search') ?? '');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const [bulkLoading, setBulkLoading] = useState(false);
   
   // Modal states
   const [deleteDialog, setDeleteDialog] = useState<{ isOpen: boolean; ids: string[]; count: number; name?: string; email?: string }>({ isOpen: false, ids: [], count: 0 });
@@ -48,7 +46,6 @@ export default function UsersPage(): React.ReactElement {
       const { data } = await adminApi.getUserStats();
       if (data.data) setStats(data.data);
     } catch { /* empty */ }
-    setStatsLoading(false);
   }, []);
 
   useEffect(() => {
@@ -74,7 +71,7 @@ export default function UsersPage(): React.ReactElement {
   const handleDelete = async () => {
     try {
       if (deleteDialog.count === 1) {
-        await adminApi.deleteUser(deleteDialog.ids[0]);
+        await adminApi.deleteUser(deleteDialog.ids[0] as string);
         toast.success('User deleted');
       } else {
         await adminApi.bulkDeleteUsers({ ids: deleteDialog.ids });

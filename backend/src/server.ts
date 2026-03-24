@@ -12,8 +12,6 @@ import productRoutes from './routes/productRoutes.js';
 import orderRoutes from './routes/orderRoutes.js';
 import adminRoutes, { publicCategoriesRouter } from './routes/adminRoutes.js';
 import { getPublicSettings } from './controllers/settingsController.js';
-import cron from 'node-cron';
-import { prisma } from './utils/prisma.js';
 
 const app = express();
 
