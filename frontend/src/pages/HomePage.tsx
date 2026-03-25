@@ -36,12 +36,14 @@ export default function HomePage(): React.ReactElement {
   return (
     <div>
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-primary-600 via-primary-700 to-primary-900 text-white overflow-hidden">
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-20 left-20 w-72 h-72 bg-white rounded-full blur-3xl" />
-          <div className="absolute bottom-20 right-20 w-96 h-96 bg-white rounded-full blur-3xl" />
-        </div>
-        <div className="container-page relative py-16 md:py-24 lg:py-32">
+      <section 
+        className="relative min-h-[80vh] flex items-center bg-cover bg-center bg-no-repeat text-white overflow-hidden"
+        style={{ backgroundImage: "url('/images/hero.png')" }}
+      >
+        {/* Dark Overlay with Blur - technique: absolute inset-0 with bg-black/45 and backdrop-blur */}
+        <div className="absolute inset-0 bg-black/45 backdrop-blur-[1px] z-0" />
+        
+        <div className="container-page relative z-10 py-16 md:py-24 lg:py-32">
           <div className="max-w-2xl">
             <h1 className="text-3xl md:text-5xl lg:text-6xl font-extrabold leading-tight mb-6">
               Shop & Order
@@ -49,16 +51,16 @@ export default function HomePage(): React.ReactElement {
                 via <span className="text-green-300">WhatsApp</span>
               </span>
             </h1>
-            <p className="text-lg md:text-xl text-primary-100 mb-8 leading-relaxed">
+            <p className="text-lg md:text-xl text-white/90 mb-8 leading-relaxed">
               Browse our curated collection, pick your favorites, and order instantly through WhatsApp. No complicated checkout — just message and done!
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
-              <Link to="/products" className="btn-primary bg-white text-primary-700 hover:bg-primary-50 text-base px-8">
+              <Link to="/products" className="btn-primary bg-white text-primary-700 hover:bg-primary-50 text-base px-8 transition-transform hover:scale-105 active:scale-95">
                 Browse Products
               </Link>
               <Link
                 to="/products"
-                className="btn border-2 border-white/30 text-white hover:bg-white/10 text-base px-8"
+                className="btn border-2 border-white/30 text-white hover:bg-white/10 hover:border-white/50 text-base px-8 transition-transform hover:scale-105 active:scale-95"
               >
                 View Categories
               </Link>
