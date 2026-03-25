@@ -63,14 +63,14 @@ function Header(): React.ReactElement {
             <img 
               src={settings?.store_logo_url || "/logo.png"} 
               alt={storeName} 
-              className="h-9 w-auto object-contain"
+              className="h-10 md:h-14 w-auto object-contain"
               onError={(e) => {
                 // If /logo.png also fails, show text logo
                 e.currentTarget.style.display = 'none';
                 e.currentTarget.nextElementSibling?.classList.remove('hidden');
               }}
             />
-            <span className="hidden text-xl md:text-2xl font-bold bg-gradient-to-r from-primary-600 to-primary-800 bg-clip-text text-transparent">
+            <span className="text-xl md:text-2xl font-bold bg-gradient-to-r from-primary-600 to-primary-800 bg-clip-text text-transparent">
               {storeName}
             </span>
           </Link>

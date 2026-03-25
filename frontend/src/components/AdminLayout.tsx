@@ -69,7 +69,7 @@ export default function AdminLayout(): React.ReactElement {
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>
             </button>
             <Link to="/admin/dashboard" className="flex items-center gap-3">
-              <img src="/logo.png" alt="HetMarketing" className="h-8 w-auto object-contain" />
+              <img src="/logo.png" alt="HetMarketing" className="h-10 w-auto object-contain" />
               <span className="text-xl font-bold text-primary-700 hidden sm:block">Admin Panel</span>
             </Link>
           </div>
