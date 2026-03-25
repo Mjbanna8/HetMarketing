@@ -61,7 +61,7 @@ export function buildOrderMessage(
       .replace(/\{\{orderId\}\}/g, orderId);
   }
 
-  return `🛍️ NEW ORDER — ${storeName}
+  return `🛍️ NEW ORDER - ${storeName}
 ━━━━━━━━━━━━━━━━━━━━━━━━
 📦 Product: ${productName}
 🔢 Quantity: ${qty}

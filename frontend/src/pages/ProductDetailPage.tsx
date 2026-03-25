@@ -95,7 +95,7 @@ export default function ProductDetailPage(): React.ReactElement {
         const order = data.data;
 
         // Get settings for WhatsApp number and template
-        let settings: SiteSettings = { store_name: 'WA Commerce', store_logo_url: '', whatsapp_number: order.whatsappNumberUsed, contact_email: '' };
+        let settings: SiteSettings = { store_name: 'HetMarketing', store_logo_url: '', whatsapp_number: order.whatsappNumberUsed, contact_email: '' };
         try {
           const settingsRes = await settingsApi.getPublic();
           if (settingsRes.data.data) settings = settingsRes.data.data;

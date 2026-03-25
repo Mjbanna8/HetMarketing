@@ -198,7 +198,7 @@ export async function forgotPassword(input: ForgotPasswordInput): Promise<void> 
 
   await sendEmail({
     to: email,
-    subject: 'Reset Your Password — WA Commerce',
+    subject: 'Reset Your Password - HetMarketing',
     html,
   });
 

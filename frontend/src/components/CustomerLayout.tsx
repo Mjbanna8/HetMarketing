@@ -52,7 +52,7 @@ function Header(): React.ReactElement {
     navigate('/');
   };
 
-  const storeName = settings?.store_name ?? 'WA Commerce';
+  const storeName = settings?.store_name ?? 'HetMarketing';
 
   return (
     <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-surface-100">
@@ -207,7 +207,7 @@ function Footer(): React.ReactElement {
       <div className="container-page py-12">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div>
-            <h3 className="text-white font-bold text-lg mb-4">{settings?.store_name ?? 'WA Commerce'}</h3>
+            <h3 className="text-white font-bold text-lg mb-4">{settings?.store_name ?? 'HetMarketing'}</h3>
             <p className="text-sm leading-relaxed">Order your favorite products directly via WhatsApp. Fast, easy, and convenient shopping experience.</p>
           </div>
           <div>
@@ -238,7 +238,7 @@ function Footer(): React.ReactElement {
           </div>
         </div>
         <div className="mt-8 pt-8 border-t border-surface-800 text-center text-xs text-surface-500">
-          © {new Date().getFullYear()} {settings?.store_name ?? 'WA Commerce'}. All rights reserved.
+          © {new Date().getFullYear()} {settings?.store_name ?? 'HetMarketing'}. All rights reserved.
         </div>
       </div>
     </footer>

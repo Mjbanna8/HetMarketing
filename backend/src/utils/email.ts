@@ -21,7 +21,7 @@ interface EmailOptions {
 export async function sendEmail(options: EmailOptions): Promise<void> {
   try {
     await transporter.sendMail({
-      from: `"WA Commerce" <${config.smtp.user}>`,
+      from: `"HetMarketing" <${config.smtp.user}>`,
       to: options.to,
       subject: options.subject,
       html: options.html,

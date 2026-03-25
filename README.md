@@ -1,4 +1,4 @@
-# WA Commerce — WhatsApp-Integrated E-Commerce Platform
+# HetMarketing — WhatsApp-Integrated E-Commerce Platform
 
 A full-stack e-commerce platform where customers browse products and order via WhatsApp deep links. Built with React + TypeScript (frontend) and Node.js + Express + Prisma (backend).
 
@@ -86,8 +86,7 @@ Visit:
 ### Default Admin Credentials
 
 ```
-Email: admin@store.com
-Password: Admin@123
+
 ```
 
 ## Project Structure

@@ -24,7 +24,7 @@ async function main(): Promise<void> {
   // --- Site Settings ---
   const settings = [
     { key: 'whatsapp_number', value: '+919999999999' },
-    { key: 'store_name', value: 'WA Commerce' },
+    { key: 'store_name', value: 'HetMarketing' },
     { key: 'store_logo_url', value: '' },
     { key: 'wp_message_template', value: DEFAULT_WP_TEMPLATE },
     { key: 'contact_email', value: 'admin@wacommerce.com' },
