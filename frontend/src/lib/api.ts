@@ -1,6 +1,6 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 import toast from 'react-hot-toast';
-import { STORAGE_KEYS, API_ENDPOINTS } from '../config/constants';
+import { STORAGE_KEYS, API_ENDPOINTS } from '../constants/constants';
 
 /**
  * PRODUCTION-READY AXIOS INSTANCE
@@ -10,7 +10,13 @@ import { STORAGE_KEYS, API_ENDPOINTS } from '../config/constants';
  * - Access Token: Stored in localStorage (short-lived) for Bearer auth headers.
  */
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
+const API_URL = import.meta.env.VITE_API_URL;
+
+if (!API_URL) {
+  const errorMsg = 'CRITICAL: VITE_API_URL is not defined in environment variables. API calls will fail.';
+  console.error(errorMsg);
+  // Optional: You could throw a real error here that breaks the app build or startup
+}
 
 const api = axios.create({
   baseURL: API_URL,
@@ -61,16 +67,16 @@ api.interceptors.response.use(
   async (error: AxiosError) => {
     const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
 
-    // Log error with context for observability
-    console.error(`[API ERROR] ${originalRequest?.method?.toUpperCase()} ${originalRequest?.url}:`, {
+    // Log error with context for observability as requested
+    console.error(`[API ERROR]`, {
+      method: originalRequest?.method?.toUpperCase(),
+      url: originalRequest?.url,
       status: error.response?.status,
       data: error.response?.data,
-      message: error.message,
     });
 
     // If error is 401 and we haven't tried to refresh yet
     if (error.response?.status === 401 && !originalRequest._retry) {
-      
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
           failedQueue.push({ resolve, reject });
@@ -119,6 +125,7 @@ api.interceptors.response.use(
     // Global error handler for non-401 failures
     if (error.response?.status !== 401) {
       const message = (error.response?.data as any)?.error || error.message || 'An unexpected error occurred';
+      // Use unique toast ID as requested
       toast.error(message, { id: 'global-api-error' });
     }
 

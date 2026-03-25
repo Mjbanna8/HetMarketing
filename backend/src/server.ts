@@ -13,6 +13,8 @@ import orderRoutes from './routes/orderRoutes.js';
 import adminRoutes, { publicCategoriesRouter } from './routes/adminRoutes.js';
 import { getPublicSettings } from './controllers/settingsController.js';
 
+import { prisma } from './utils/prisma.js';
+
 const app = express();
 
 // Trust proxy for secure sessions/cookies behind Vercel/Railway
@@ -33,7 +35,7 @@ app.use(
         styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
         fontSrc: ["'self'", 'https://fonts.gstatic.com'],
         imgSrc: ["'self'", 'data:', 'https://res.cloudinary.com', 'https://*.cloudinary.com'],
-        connectSrc: ["'self'", config.frontendUrl],
+        connectSrc: ["'self'", config.frontendUrl, 'https://hetmarketing.tech', 'https://www.hetmarketing.tech'],
       },
     },
     crossOriginEmbedderPolicy: false,
@@ -43,7 +45,13 @@ app.use(
 // CORS
 app.use(
   cors({
-    origin: [config.frontendUrl, 'https://hetmarketing.tech'], // Allow both env and final domain
+    origin: [
+      config.frontendUrl, 
+      'https://hetmarketing.tech', 
+      'https://www.hetmarketing.tech',
+      'http://localhost:5173',
+      'http://localhost:3000'
+    ],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'X-CSRF-Token'],
@@ -88,8 +96,25 @@ app.get('/api/health', (_req, res) => {
 app.use(errorHandler);
 
 // Start server
-app.listen(config.port, () => {
-  logger.info(`🚀 Server running on port ${config.port} in ${config.nodeEnv} mode`);
-});
+const startServer = async () => {
+  try {
+    // Verify database connection before starting
+    await prisma.$connect();
+    logger.info('✅ Database connected successfully');
+    
+    app.listen(config.port, () => {
+      logger.info(`🚀 Server running on port ${config.port} in ${config.nodeEnv} mode`);
+      console.log(`Server running on port ${config.port}`);
+      console.log('Database connected');
+    });
+  } catch (error) {
+    logger.error('❌ Database connection failed:', error);
+    console.error('FATAL: Could not connect to database on startup.');
+    console.error(error);
+    process.exit(1);
+  }
+};
+
+startServer();
 
 export default app;

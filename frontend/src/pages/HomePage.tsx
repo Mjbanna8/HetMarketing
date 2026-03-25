@@ -7,41 +7,74 @@ import { ErrorBoundary } from '../components/ErrorBoundary';
 import { formatINR, getRecentlyViewed } from '../utils';
 
 export default function HomePage(): React.ReactElement {
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [latestProducts, setLatestProducts] = useState<Product[]>([]);
-  const [discountedProducts, setDiscountedProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
+  // Independent states for each section
+  const [categories, setCategories] = useState<{ data: Category[]; loading: boolean; error: boolean }>({
+    data: [],
+    loading: true,
+    error: false,
+  });
+  const [latestProducts, setLatestProducts] = useState<{ data: Product[]; loading: boolean; error: boolean }>({
+    data: [],
+    loading: true,
+    error: false,
+  });
+  const [discountedProducts, setDiscountedProducts] = useState<{ data: Product[]; loading: boolean; error: boolean }>({
+    data: [],
+    loading: true,
+    error: false,
+  });
 
+  // Independent fetching for Categories
   useEffect(() => {
-    const load = async () => {
+    const fetchCategories = async () => {
       try {
-        const [catRes, latestRes, discountRes] = await Promise.all([
-          categoriesApi.getAll(),
-          productsApi.getLatest(),
-          productsApi.getDiscounted(),
-        ]);
-        if (catRes.data.data) setCategories(catRes.data.data);
-        if (latestRes.data.data) setLatestProducts(latestRes.data.data);
-        if (discountRes.data.data) setDiscountedProducts(discountRes.data.data);
-      } catch {
-        // handled by empty states
-      } finally {
-        setLoading(false);
+        const res = await categoriesApi.getAll();
+        setCategories({ data: res.data.data || [], loading: false, error: false });
+      } catch (err) {
+        console.error('Failed to fetch categories:', err);
+        setCategories(prev => ({ ...prev, loading: false, error: true }));
       }
     };
-    load();
+    fetchCategories();
+  }, []);
+
+  // Independent fetching for New Arrivals
+  useEffect(() => {
+    const fetchLatest = async () => {
+      try {
+        const res = await productsApi.getLatest();
+        setLatestProducts({ data: res.data.data || [], loading: false, error: false });
+      } catch (err) {
+        console.error('Failed to fetch latest products:', err);
+        setLatestProducts(prev => ({ ...prev, loading: false, error: true }));
+      }
+    };
+    fetchLatest();
+  }, []);
+
+  // Independent fetching for Special Offers
+  useEffect(() => {
+    const fetchDiscounted = async () => {
+      try {
+        const res = await productsApi.getDiscounted();
+        setDiscountedProducts({ data: res.data.data || [], loading: false, error: false });
+      } catch (err) {
+        console.error('Failed to fetch discounted products:', err);
+        setDiscountedProducts(prev => ({ ...prev, loading: false, error: true }));
+      }
+    };
+    fetchDiscounted();
   }, []);
 
   const recentlyViewed = getRecentlyViewed();
 
   return (
-    <div>
+    <div className="space-y-4">
       {/* Hero Section */}
       <section 
         className="relative min-h-[80vh] flex items-center bg-cover bg-center bg-no-repeat text-white overflow-hidden"
         style={{ backgroundImage: "url('/images/hero.png')" }}
       >
-        {/* Dark Overlay with Blur - technique: absolute inset-0 with bg-black/45 and backdrop-blur */}
         <div className="absolute inset-0 bg-black/45 backdrop-blur-[1px] z-0" />
         
         <div className="container-page relative z-10 py-16 md:py-24 lg:py-32">
@@ -68,19 +101,31 @@ export default function HomePage(): React.ReactElement {
             </div>
           </div>
         </div>
-      </section>      {/* Categories */}
+      </section>
+
+      {/* Categories */}
       <ErrorBoundary>
         <section className="container-page py-12 md:py-16">
           <h2 className="section-title mb-8">Shop by Category</h2>
-          {loading ? (
+          {categories.loading ? (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {Array.from({ length: 4 }).map((_, i) => (
                 <div key={i} className="card p-6 h-32 animate-pulse bg-surface-50" />
               ))}
             </div>
-          ) : categories.length > 0 ? (
+          ) : categories.error ? (
+            <div className="p-8 rounded-2xl bg-surface-50 border border-surface-100 text-center">
+              <p className="text-surface-600 mb-4">We're having trouble loading categories right now.</p>
+              <button 
+                onClick={() => window.location.reload()}
+                className="text-primary-600 font-medium hover:underline"
+              >
+                Try Again
+              </button>
+            </div>
+          ) : categories.data.length > 0 ? (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {categories.map((cat) => (
+              {categories.data.map((cat) => (
                 <Link
                   key={cat.id}
                   to={`/products/category/${cat.slug}`}
@@ -118,11 +163,25 @@ export default function HomePage(): React.ReactElement {
               View All →
             </Link>
           </div>
-          {loading ? (
+          {latestProducts.loading ? (
             <ProductGridSkeleton count={4} />
-          ) : latestProducts.length > 0 ? (
+          ) : latestProducts.error ? (
+            <div className="p-12 rounded-2xl bg-surface-50 border border-surface-100 text-center">
+               <svg className="w-12 h-12 text-surface-300 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+              <h3 className="text-lg font-medium text-surface-900 mb-2">Failed to load arrivals</h3>
+              <p className="text-surface-500 mb-6">Something went wrong while fetching our newest products.</p>
+              <button 
+                onClick={() => window.location.reload()}
+                className="btn-primary"
+              >
+                Retry Loading
+              </button>
+            </div>
+          ) : latestProducts.data.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-              {latestProducts.map((product) => (
+              {latestProducts.data.map((product) => (
                 <ProductCard key={product.id} product={product} />
               ))}
             </div>
@@ -134,7 +193,7 @@ export default function HomePage(): React.ReactElement {
 
       {/* Special Offers */}
       <ErrorBoundary>
-        {(loading || discountedProducts.length > 0) && (
+        {(discountedProducts.loading || discountedProducts.data.length > 0 || discountedProducts.error) && (
           <section className="bg-gradient-to-r from-red-50 to-orange-50 py-12 md:py-16">
             <div className="container-page">
               <div className="flex items-center justify-between mb-8">
@@ -146,11 +205,15 @@ export default function HomePage(): React.ReactElement {
                   View All →
                 </Link>
               </div>
-              {loading ? (
+              {discountedProducts.loading ? (
                 <ProductGridSkeleton count={4} />
+              ) : discountedProducts.error ? (
+                <div className="bg-white/50 backdrop-blur-sm p-8 rounded-2xl border border-red-100 text-center">
+                  <p className="text-red-600 font-medium">Offers temporarily unavailable</p>
+                </div>
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                  {discountedProducts.map((product) => (
+                  {discountedProducts.data.map((product) => (
                     <ProductCard key={product.id} product={product} />
                   ))}
                 </div>
