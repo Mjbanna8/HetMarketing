@@ -86,7 +86,7 @@ export default function HomePage(): React.ReactElement {
               </span>
             </h1>
             <p className="text-lg md:text-xl text-white/90 mb-8 leading-relaxed">
-              Browse our curated collection, pick your favorites, and order instantly through WhatsApp. No complicated checkout — just message and done!
+              Browse our curated collection, pick your favorites, and order instantly through WhatsApp. No complicated checkout - just message and done!
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <Link to="/products" className="btn-primary bg-white text-primary-700 hover:bg-primary-50 text-base px-8 transition-transform hover:scale-105 active:scale-95">

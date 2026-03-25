@@ -3,7 +3,7 @@ import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
-const DEFAULT_WP_TEMPLATE = `🛍️ NEW ORDER — {{storeName}}
+const DEFAULT_WP_TEMPLATE = `🛍️ NEW ORDER - {{storeName}}
 ━━━━━━━━━━━━━━━━━━━━━━━━
 📦 Product: {{productName}}
 🔢 Quantity: {{qty}}
@@ -142,7 +142,7 @@ async function main(): Promise<void> {
     {
       name: 'Organic Cotton Towel Set',
       slug: 'organic-cotton-towel-set',
-      description: 'Premium 600 GSM organic cotton towel set — 2 bath towels and 2 hand towels. Ultra-soft, quick-drying, and hypoallergenic.',
+      description: 'Premium 600 GSM organic cotton towel set - 2 bath towels and 2 hand towels. Ultra-soft, quick-drying, and hypoallergenic.',
       price: 1299,
       originalPrice: 1799,
       categorySlug: 'daily-use',

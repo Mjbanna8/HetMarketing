@@ -60,13 +60,19 @@ function Header(): React.ReactElement {
         <div className="flex items-center justify-between h-16 md:h-20">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2 shrink-0">
-            {settings?.store_logo_url ? (
-              <img src={settings.store_logo_url} alt={storeName} className="h-8 w-auto" />
-            ) : (
-              <span className="text-xl md:text-2xl font-bold bg-gradient-to-r from-primary-600 to-primary-800 bg-clip-text text-transparent">
-                {storeName}
-              </span>
-            )}
+            <img 
+              src={settings?.store_logo_url || "/logo.png"} 
+              alt={storeName} 
+              className="h-9 w-auto object-contain"
+              onError={(e) => {
+                // If /logo.png also fails, show text logo
+                e.currentTarget.style.display = 'none';
+                e.currentTarget.nextElementSibling?.classList.remove('hidden');
+              }}
+            />
+            <span className="hidden text-xl md:text-2xl font-bold bg-gradient-to-r from-primary-600 to-primary-800 bg-clip-text text-transparent">
+              {storeName}
+            </span>
           </Link>
 
           {/* Desktop Search */}
