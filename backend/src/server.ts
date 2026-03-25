@@ -15,6 +15,9 @@ import { getPublicSettings } from './controllers/settingsController.js';
 
 const app = express();
 
+// Trust proxy for secure sessions/cookies behind Vercel/Railway
+app.set('trust proxy', 1);
+
 // Ensure tmp uploads directory exists
 if (!fs.existsSync('/tmp/uploads')) {
   fs.mkdirSync('/tmp/uploads', { recursive: true });
@@ -40,7 +43,7 @@ app.use(
 // CORS
 app.use(
   cors({
-    origin: config.frontendUrl,
+    origin: [config.frontendUrl, 'https://hetmarketing.tech'], // Allow both env and final domain
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'X-CSRF-Token'],

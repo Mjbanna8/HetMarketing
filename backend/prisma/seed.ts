@@ -40,7 +40,7 @@ async function main(): Promise<void> {
   console.log('✅ Site settings seeded');
 
   // --- Admin Account ---
-  const adminPasswordHash = await bcrypt.hash('Admin@123', 12);
+  const adminPasswordHash = await bcrypt.hash('Admin@123', 10);
   await prisma.admin.upsert({
     where: { email: 'admin@store.com' },
     update: {},

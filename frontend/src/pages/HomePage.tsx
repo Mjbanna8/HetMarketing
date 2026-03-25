@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { productsApi, categoriesApi } from '../api';
 import type { Product, Category } from '../types';
 import { ProductCard, ProductGridSkeleton, EmptyState } from '../components/Shared';
+import { ErrorBoundary } from '../components/ErrorBoundary';
 import { formatINR, getRecentlyViewed } from '../utils';
 
 export default function HomePage(): React.ReactElement {
@@ -67,81 +68,97 @@ export default function HomePage(): React.ReactElement {
             </div>
           </div>
         </div>
-      </section>
-
-      {/* Categories */}
-      {categories.length > 0 && (
+      </section>      {/* Categories */}
+      <ErrorBoundary>
         <section className="container-page py-12 md:py-16">
           <h2 className="section-title mb-8">Shop by Category</h2>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {categories.map((cat) => (
-              <Link
-                key={cat.id}
-                to={`/products/category/${cat.slug}`}
-                className="card p-6 text-center group hover:border-primary-200 transition-all"
-                id={`category-${cat.slug}`}
-              >
-                {cat.iconUrl ? (
-                  <img src={cat.iconUrl} alt={cat.name} className="w-12 h-12 mx-auto mb-3 object-contain" onError={(e) => { (e.target as HTMLImageElement).src = 'https://placehold.co/600x600/EEE/999?text=No+Image'; }} />
-                ) : (
-                  <div className="w-12 h-12 mx-auto mb-3 rounded-xl bg-primary-50 flex items-center justify-center group-hover:bg-primary-100 transition-colors">
-                    <svg className="w-6 h-6 text-primary-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                    </svg>
-                  </div>
-                )}
-                <h3 className="font-semibold text-surface-900 group-hover:text-primary-600 transition-colors">{cat.name}</h3>
-                {cat._count !== undefined && (
-                  <p className="text-xs text-surface-400 mt-1">{cat._count.products} products</p>
-                )}
-              </Link>
-            ))}
-          </div>
+          {loading ? (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="card p-6 h-32 animate-pulse bg-surface-50" />
+              ))}
+            </div>
+          ) : categories.length > 0 ? (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {categories.map((cat) => (
+                <Link
+                  key={cat.id}
+                  to={`/products/category/${cat.slug}`}
+                  className="card p-6 text-center group hover:border-primary-200 transition-all"
+                  id={`category-${cat.slug}`}
+                >
+                  {cat.iconUrl ? (
+                    <img src={cat.iconUrl} alt={cat.name} className="w-12 h-12 mx-auto mb-3 object-contain" onError={(e) => { (e.target as HTMLImageElement).src = 'https://placehold.co/600x600/EEE/999?text=No+Image'; }} />
+                  ) : (
+                    <div className="w-12 h-12 mx-auto mb-3 rounded-xl bg-primary-50 flex items-center justify-center group-hover:bg-primary-100 transition-colors">
+                      <svg className="w-6 h-6 text-primary-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                      </svg>
+                    </div>
+                  )}
+                  <h3 className="font-semibold text-surface-900 group-hover:text-primary-600 transition-colors">{cat.name}</h3>
+                  {cat._count !== undefined && (
+                    <p className="text-xs text-surface-400 mt-1">{cat._count.products} products</p>
+                  )}
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <EmptyState title="No categories" message="We're setting up our categories. Check back soon!" />
+          )}
         </section>
-      )}
+      </ErrorBoundary>
 
       {/* New Arrivals */}
-      <section className="container-page py-12 md:py-16">
-        <div className="flex items-center justify-between mb-8">
-          <h2 className="section-title">New Arrivals</h2>
-          <Link to="/products" className="text-primary-600 font-medium text-sm hover:text-primary-700 transition-colors">
-            View All →
-          </Link>
-        </div>
-        {loading ? (
-          <ProductGridSkeleton count={6} />
-        ) : latestProducts.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {latestProducts.map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
+      <ErrorBoundary>
+        <section className="container-page py-12 md:py-16">
+          <div className="flex items-center justify-between mb-8">
+            <h2 className="section-title">New Arrivals</h2>
+            <Link to="/products" className="text-primary-600 font-medium text-sm hover:text-primary-700 transition-colors">
+              View All →
+            </Link>
           </div>
-        ) : (
-          <EmptyState title="No products yet" message="Check back soon for our latest arrivals!" />
-        )}
-      </section>
-
-      {/* Special Offers */}
-      {discountedProducts.length > 0 && (
-        <section className="bg-gradient-to-r from-red-50 to-orange-50 py-12 md:py-16">
-          <div className="container-page">
-            <div className="flex items-center justify-between mb-8">
-              <div>
-                <h2 className="section-title">Special Offers</h2>
-                <p className="text-surface-500 mt-1">Grab these deals before they're gone</p>
-              </div>
-              <Link to="/products" className="text-primary-600 font-medium text-sm hover:text-primary-700 transition-colors">
-                View All →
-              </Link>
-            </div>
+          {loading ? (
+            <ProductGridSkeleton count={4} />
+          ) : latestProducts.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-              {discountedProducts.map((product) => (
+              {latestProducts.map((product) => (
                 <ProductCard key={product.id} product={product} />
               ))}
             </div>
-          </div>
+          ) : (
+            <EmptyState title="No products yet" message="Check back soon for our latest arrivals!" />
+          )}
         </section>
-      )}
+      </ErrorBoundary>
+
+      {/* Special Offers */}
+      <ErrorBoundary>
+        {(loading || discountedProducts.length > 0) && (
+          <section className="bg-gradient-to-r from-red-50 to-orange-50 py-12 md:py-16">
+            <div className="container-page">
+              <div className="flex items-center justify-between mb-8">
+                <div>
+                  <h2 className="section-title">Special Offers</h2>
+                  <p className="text-surface-500 mt-1">Grab these deals before they're gone</p>
+                </div>
+                <Link to="/products" className="text-primary-600 font-medium text-sm hover:text-primary-700 transition-colors">
+                  View All →
+                </Link>
+              </div>
+              {loading ? (
+                <ProductGridSkeleton count={4} />
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                  {discountedProducts.map((product) => (
+                    <ProductCard key={product.id} product={product} />
+                  ))}
+                </div>
+              )}
+            </div>
+          </section>
+        )}
+      </ErrorBoundary>
 
       {/* Recently Viewed */}
       {recentlyViewed.length > 0 && (
