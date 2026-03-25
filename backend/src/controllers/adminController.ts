@@ -49,12 +49,8 @@ export const updateProduct = asyncHandler(async (req: Request, res: Response): P
   try {
     const files = req.files as Express.Multer.File[];
     const newImageBuffers = files ? files.map((f) => f.buffer) : [];
-    const removeImageIds = req.body.removeImageIds
-      ? JSON.parse(req.body.removeImageIds)
-      : undefined;
-    const imageOrder = req.body.imageOrder
-      ? JSON.parse(req.body.imageOrder)
-      : undefined;
+    const removeImageIds = req.body.removeImageIds;
+    const imageOrder = req.body.imageOrder;
 
     const product = await productService.updateProduct(
       req.params.id,

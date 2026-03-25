@@ -83,7 +83,14 @@ export const createProductSchema = z.object({
   tags: z.union([z.string().transform((s) => s.split(',').map((t) => t.trim()).filter(Boolean)), z.array(z.string())]).default([]),
 });
 
-export const updateProductSchema = createProductSchema.partial();
+export const updateProductSchema = createProductSchema.extend({
+  removeImageIds: z.union([z.string().transform((s) => JSON.parse(s)), z.array(z.string())]).optional(),
+  imageOrder: z.union([z.string().transform((s) => JSON.parse(s)), z.array(z.object({
+    id: z.string(),
+    displayOrder: z.coerce.number(),
+    isPrimary: z.coerce.boolean()
+  }))]).optional(),
+}).partial();
 
 export const createCategorySchema = z.object({
   name: z.string().min(2, 'Category name must be at least 2 characters').max(100).trim(),

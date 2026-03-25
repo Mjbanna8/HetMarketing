@@ -5,6 +5,7 @@ import { validate } from '../middleware/validate.js';
 import { upload } from '../middleware/upload.js';
 import {
   createProductSchema,
+  updateProductSchema,
   bulkActionSchema,
   createCategorySchema,
   updateOrderStatusSchema,
@@ -24,7 +25,7 @@ router.get('/products', adminController.getAdminProducts);
 router.get('/products/trash', adminController.getTrashProducts);
 router.get('/products/export', adminController.exportProducts);
 router.post('/products', upload.array('images', 10), validate(createProductSchema), adminController.createProduct);
-router.put('/products/:id', upload.array('images', 10), adminController.updateProduct);
+router.put('/products/:id', upload.array('images', 10), validate(updateProductSchema), adminController.updateProduct);
 router.delete('/products/:id', adminController.softDeleteProduct);
 router.post('/products/:id/restore', adminController.restoreProduct);
 router.delete('/products/:id/hard', adminController.hardDeleteProduct);

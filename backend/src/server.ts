@@ -43,15 +43,29 @@ app.use(
 );
 
 // CORS
+const allowedOrigins = [
+  config.frontendUrl, 
+  'https://hetmarketing.tech', 
+  'https://www.hetmarketing.tech',
+  'http://localhost:5173',
+  'http://localhost:3000'
+];
+
 app.use(
   cors({
-    origin: [
-      config.frontendUrl, 
-      'https://hetmarketing.tech', 
-      'https://www.hetmarketing.tech',
-      'http://localhost:5173',
-      'http://localhost:3000'
-    ],
+    origin: (origin, callback) => {
+      // Allow requests with no origin (like curl)
+      if (!origin) return callback(null, true);
+      
+      const isAllowed = allowedOrigins.includes(origin) || 
+                        origin.endsWith('.vercel.app'); // Allow all Vercel preview domains
+
+      if (isAllowed) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'X-CSRF-Token'],
