@@ -116,7 +116,7 @@ const startServer = async () => {
     await prisma.$connect();
     logger.info('✅ Database connected successfully');
     
-    app.listen(config.port, () => {
+    app.listen(config.port, '0.0.0.0', () => {
       logger.info(`🚀 Server running on port ${config.port} in ${config.nodeEnv} mode`);
       console.log(`Server running on port ${config.port}`);
       console.log('Database connected');
