@@ -22,9 +22,43 @@ export default function ProductDetailPage(): React.ReactElement {
   // Order modal state
   const [orderModalOpen, setOrderModalOpen] = useState(false);
   const [quantity, setQuantity] = useState(1);
-  const [deliveryAddress, setDeliveryAddress] = useState('');
   const [customerNote, setCustomerNote] = useState('');
   const [submitting, setSubmitting] = useState(false);
+
+  // Structured address fields
+  const [addrFirstName, setAddrFirstName] = useState('');
+  const [addrLastName, setAddrLastName] = useState('');
+  const [addrLine1, setAddrLine1] = useState('');
+  const [addrLine2, setAddrLine2] = useState('');
+  const [addrCountry, setAddrCountry] = useState('India');
+  const [addrZipCode, setAddrZipCode] = useState('');
+  const [addrCity, setAddrCity] = useState('');
+  const [addrState, setAddrState] = useState('');
+
+  const indianStates = [
+    'Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chhattisgarh',
+    'Goa', 'Gujarat', 'Haryana', 'Himachal Pradesh', 'Jharkhand', 'Karnataka',
+    'Kerala', 'Madhya Pradesh', 'Maharashtra', 'Manipur', 'Meghalaya', 'Mizoram',
+    'Nagaland', 'Odisha', 'Punjab', 'Rajasthan', 'Sikkim', 'Tamil Nadu',
+    'Telangana', 'Tripura', 'Uttar Pradesh', 'Uttarakhand', 'West Bengal',
+    'Andaman and Nicobar Islands', 'Chandigarh', 'Dadra and Nagar Haveli and Daman and Diu',
+    'Delhi', 'Jammu and Kashmir', 'Ladakh', 'Lakshadweep', 'Puducherry',
+  ];
+
+  const composeDeliveryAddress = () => {
+    const parts = [
+      `${addrFirstName.trim()} ${addrLastName.trim()}`.trim(),
+      addrLine1.trim(),
+      addrLine2.trim(),
+      addrCity.trim(),
+      addrState.trim(),
+      addrZipCode.trim(),
+      addrCountry.trim(),
+    ].filter(Boolean);
+    return parts.join(', ');
+  };
+
+  const isAddressValid = addrFirstName.trim() && addrLine1.trim() && addrCity.trim() && addrState.trim() && addrZipCode.trim();
 
   useTrackProductView(product);
 
@@ -73,14 +107,11 @@ export default function ProductDetailPage(): React.ReactElement {
   };
 
   const handleSubmitOrder = async () => {
-    if (!deliveryAddress.trim()) {
-      toast.error('Please enter your delivery address');
+    if (!isAddressValid) {
+      toast.error('Please fill in all required address fields');
       return;
     }
-    if (deliveryAddress.trim().length < 5) {
-      toast.error('Delivery address must be at least 5 characters');
-      return;
-    }
+    const deliveryAddress = composeDeliveryAddress();
 
     setSubmitting(true);
     try {
@@ -292,17 +323,134 @@ export default function ProductDetailPage(): React.ReactElement {
           </div>
 
           <div>
-            <label htmlFor="order-address" className="block text-sm font-medium text-surface-700 mb-2">
+            <p className="block text-sm font-medium text-surface-700 mb-3">
               Delivery Address <span className="text-red-500">*</span>
-            </label>
-            <textarea
-              id="order-address"
-              value={deliveryAddress}
-              onChange={(e) => setDeliveryAddress(e.target.value)}
-              className="input-field min-h-[100px] resize-none"
-              placeholder="Enter your complete delivery address"
-              required
-            />
+            </p>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label htmlFor="addr-first-name" className="block text-xs font-medium text-surface-500 mb-1">
+                  First Name <span className="text-red-500">*</span>
+                </label>
+                <input
+                  id="addr-first-name"
+                  type="text"
+                  value={addrFirstName}
+                  onChange={(e) => setAddrFirstName(e.target.value)}
+                  className="input-field"
+                  placeholder="First name"
+                  required
+                />
+              </div>
+              <div>
+                <label htmlFor="addr-last-name" className="block text-xs font-medium text-surface-500 mb-1">
+                  Last Name <span className="text-red-500">*</span>
+                </label>
+                <input
+                  id="addr-last-name"
+                  type="text"
+                  value={addrLastName}
+                  onChange={(e) => setAddrLastName(e.target.value)}
+                  className="input-field"
+                  placeholder="Last name"
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 mt-3">
+              <div>
+                <label htmlFor="addr-line1" className="block text-xs font-medium text-surface-500 mb-1">
+                  Address Line 1 <span className="text-red-500">*</span>
+                </label>
+                <input
+                  id="addr-line1"
+                  type="text"
+                  value={addrLine1}
+                  onChange={(e) => setAddrLine1(e.target.value)}
+                  className="input-field"
+                  placeholder="Street address"
+                  required
+                />
+              </div>
+              <div>
+                <label htmlFor="addr-line2" className="block text-xs font-medium text-surface-500 mb-1">
+                  Address Line 2
+                </label>
+                <input
+                  id="addr-line2"
+                  type="text"
+                  value={addrLine2}
+                  onChange={(e) => setAddrLine2(e.target.value)}
+                  className="input-field"
+                  placeholder="Apt, suite, etc."
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 mt-3">
+              <div>
+                <label htmlFor="addr-country" className="block text-xs font-medium text-surface-500 mb-1">
+                  Country <span className="text-red-500">*</span>
+                </label>
+                <select
+                  id="addr-country"
+                  value={addrCountry}
+                  onChange={(e) => { setAddrCountry(e.target.value); setAddrState(''); }}
+                  className="input-field"
+                >
+                  <option value="India">India</option>
+                </select>
+              </div>
+              <div>
+                <label htmlFor="addr-zip" className="block text-xs font-medium text-surface-500 mb-1">
+                  Zip Code <span className="text-red-500">*</span>
+                </label>
+                <input
+                  id="addr-zip"
+                  type="text"
+                  value={addrZipCode}
+                  onChange={(e) => setAddrZipCode(e.target.value.replace(/[^0-9]/g, '').slice(0, 6))}
+                  className="input-field"
+                  placeholder="Pincode"
+                  maxLength={6}
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 mt-3">
+              <div>
+                <label htmlFor="addr-city" className="block text-xs font-medium text-surface-500 mb-1">
+                  City <span className="text-red-500">*</span>
+                </label>
+                <input
+                  id="addr-city"
+                  type="text"
+                  value={addrCity}
+                  onChange={(e) => setAddrCity(e.target.value)}
+                  className="input-field"
+                  placeholder="City"
+                  required
+                />
+              </div>
+              <div>
+                <label htmlFor="addr-state" className="block text-xs font-medium text-surface-500 mb-1">
+                  State <span className="text-red-500">*</span>
+                </label>
+                <select
+                  id="addr-state"
+                  value={addrState}
+                  onChange={(e) => setAddrState(e.target.value)}
+                  className="input-field"
+                  required
+                >
+                  <option value="">Choose State</option>
+                  {indianStates.map((s) => (
+                    <option key={s} value={s}>{s}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
           </div>
 
           <div>
@@ -337,7 +485,7 @@ export default function ProductDetailPage(): React.ReactElement {
 
           <button
             onClick={handleSubmitOrder}
-            disabled={submitting || !deliveryAddress.trim()}
+            disabled={submitting || !isAddressValid}
             className="btn-whatsapp w-full text-lg"
           >
             {submitting ? (
