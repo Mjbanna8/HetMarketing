@@ -66,7 +66,7 @@ export function MarqueeOffers({ products }: MarqueeOffersProps): React.ReactElem
                 )}
 
                 {/* Product Image Placeholder */}
-                <div className="relative aspect-[4/3] w-full p-4 flex items-center justify-center bg-blue-300">
+                <div className="relative aspect-[4/3] w-full p-4 flex items-center justify-center">
                   {primaryImage ? (
                     <img
                       src={primaryImage.url}
