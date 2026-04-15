@@ -229,7 +229,7 @@ export default function ProductDetailPage(): React.ReactElement {
           </div>
 
           {/* Description */}
-          <div className="prose prose-sm max-w-none mb-8 text-surface-600 leading-relaxed" dangerouslySetInnerHTML={{ __html: product.description }} />
+          <div className="product-description mb-8 text-surface-600 leading-relaxed" dangerouslySetInnerHTML={{ __html: product.description }} />
 
           {/* Tags */}
           {product.tags.length > 0 && (

@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useForm } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
 import { adminApi } from '../../api';
 import type { Category, Product } from '../../types';
 import { Spinner } from '../../components/Shared';
@@ -28,9 +30,31 @@ export default function AdminProductFormPage(): React.ReactElement {
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(isEditing);
 
-  const { register, handleSubmit, formState: { errors }, reset } = useForm<ProductFormData>({
+  const { register, control, handleSubmit, formState: { errors }, reset } = useForm<ProductFormData>({
     defaultValues: { status: 'ACTIVE', price: '', originalPrice: '', tags: '' },
   });
+
+  const descriptionModules = {
+    toolbar: [
+      [{ header: [1, 2, false] }],
+      ['bold', 'italic', 'underline', 'strike'],
+      [{ list: 'ordered' }, { list: 'bullet' }],
+      [{ align: [] }],
+      ['link', 'clean'],
+    ],
+  };
+
+  const descriptionFormats = [
+    'header',
+    'bold',
+    'italic',
+    'underline',
+    'strike',
+    'list',
+    'bullet',
+    'align',
+    'link',
+  ];
 
   useEffect(() => {
     adminApi.getCategories().then(({ data }) => {
@@ -125,7 +149,29 @@ export default function AdminProductFormPage(): React.ReactElement {
 
             <div>
               <label htmlFor="prod-desc" className="block text-sm font-medium text-surface-700 mb-2">Description</label>
-              <textarea id="prod-desc" className="input-field min-h-[150px] resize-y" placeholder="Product description (HTML allowed)" {...register('description', { required: 'Description is required' })} />
+              <Controller
+                name="description"
+                control={control}
+                rules={{
+                  required: 'Description is required',
+                  validate: (value) => {
+                    const plainText = value.replace(/<(.|\n)*?>/g, '').trim();
+                    return plainText.length > 0 || 'Description is required';
+                  },
+                }}
+                render={({ field }) => (
+                  <ReactQuill
+                    id="prod-desc"
+                    theme="snow"
+                    value={field.value}
+                    onChange={field.onChange}
+                    modules={descriptionModules}
+                    formats={descriptionFormats}
+                    placeholder="Write product description"
+                    className="bg-white rounded-xl"
+                  />
+                )}
+              />
               {errors.description && <p className="text-red-500 text-sm mt-1">{errors.description.message}</p>}
             </div>
 
