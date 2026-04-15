@@ -20,6 +20,11 @@ export default function HomePage(): React.ReactElement {
     error: false,
   });
 
+  const [discountedProducts, setDiscountedProducts] = useState<{ data: Product[]; loading: boolean; error: boolean }>({
+    data: [],
+    loading: true,
+    error: false,
+  });
 
   // Independent fetching for Categories
   useEffect(() => {
@@ -49,7 +54,19 @@ export default function HomePage(): React.ReactElement {
     fetchLatest();
   }, []);
 
-
+  // Independent fetching for Special Offers
+  useEffect(() => {
+    const fetchDiscounted = async () => {
+      try {
+        const res = await productsApi.getDiscounted();
+        setDiscountedProducts({ data: res.data.data || [], loading: false, error: false });
+      } catch (err) {
+        console.error('Failed to fetch discounted products:', err);
+        setDiscountedProducts(prev => ({ ...prev, loading: false, error: true }));
+      }
+    };
+    fetchDiscounted();
+  }, []);
 
   const recentlyViewed = getRecentlyViewed();
 
@@ -178,7 +195,20 @@ export default function HomePage(): React.ReactElement {
 
       {/* Special Offers (Marquee) */}
       <ErrorBoundary>
-        <MarqueeOffers />
+        {(discountedProducts.loading || discountedProducts.data.length > 0 || discountedProducts.error) && (
+          discountedProducts.data.length > 0 ? (
+            <MarqueeOffers products={discountedProducts.data} />
+          ) : discountedProducts.loading ? (
+             <section className="bg-gradient-to-r from-red-50 to-orange-50 py-12 md:py-16">
+               <div className="container-page">
+                 <div className="flex items-center justify-between mb-8">
+                   <h2 className="section-title">Special Offers</h2>
+                 </div>
+                 <ProductGridSkeleton count={4} />
+               </div>
+             </section>
+          ) : null
+        )}
       </ErrorBoundary>
 
       {/* Recently Viewed */}
