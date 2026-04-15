@@ -10,7 +10,7 @@ export function MarqueeOffers({ products }: MarqueeOffersProps): React.ReactElem
   if (!products || products.length === 0) return null;
 
   const renderProductGrid = (prefix: string) => (
-    <div className="grid grid-rows-4 grid-flow-col gap-4 pr-4 sm:gap-6 sm:pr-6" aria-hidden={prefix === 'grid2' ? "true" : "false"}>
+    <div className="grid grid-rows-2 grid-flow-col gap-4 pr-4 sm:gap-6 sm:pr-6" aria-hidden={prefix === 'grid2' ? "true" : "false"}>
       {products.map((product, index) => {
         const hasDiscount = product.originalPrice && product.originalPrice > product.price;
         const discountPercent = hasDiscount
