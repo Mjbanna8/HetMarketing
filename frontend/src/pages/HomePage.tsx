@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { productsApi, categoriesApi } from '../api';
 import type { Product, Category } from '../types';
 import { ProductCard, ProductGridSkeleton, EmptyState } from '../components/Shared';
+import { MarqueeOffers } from '../components/MarqueeOffers';
 import { ErrorBoundary } from '../components/ErrorBoundary';
 import { formatINR, getRecentlyViewed } from '../utils';
 
@@ -18,11 +19,7 @@ export default function HomePage(): React.ReactElement {
     loading: true,
     error: false,
   });
-  const [discountedProducts, setDiscountedProducts] = useState<{ data: Product[]; loading: boolean; error: boolean }>({
-    data: [],
-    loading: true,
-    error: false,
-  });
+
 
   // Independent fetching for Categories
   useEffect(() => {
@@ -52,19 +49,7 @@ export default function HomePage(): React.ReactElement {
     fetchLatest();
   }, []);
 
-  // Independent fetching for Special Offers
-  useEffect(() => {
-    const fetchDiscounted = async () => {
-      try {
-        const res = await productsApi.getDiscounted();
-        setDiscountedProducts({ data: res.data.data || [], loading: false, error: false });
-      } catch (err) {
-        console.error('Failed to fetch discounted products:', err);
-        setDiscountedProducts(prev => ({ ...prev, loading: false, error: true }));
-      }
-    };
-    fetchDiscounted();
-  }, []);
+
 
   const recentlyViewed = getRecentlyViewed();
 
@@ -191,36 +176,9 @@ export default function HomePage(): React.ReactElement {
         </section>
       </ErrorBoundary>
 
-      {/* Special Offers */}
+      {/* Special Offers (Marquee) */}
       <ErrorBoundary>
-        {(discountedProducts.loading || discountedProducts.data.length > 0 || discountedProducts.error) && (
-          <section className="bg-gradient-to-r from-red-50 to-orange-50 py-12 md:py-16">
-            <div className="container-page">
-              <div className="flex items-center justify-between mb-8">
-                <div>
-                  <h2 className="section-title">Special Offers</h2>
-                  <p className="text-surface-500 mt-1">Grab these deals before they're gone</p>
-                </div>
-                <Link to="/products" className="text-primary-600 font-medium text-sm hover:text-primary-700 transition-colors">
-                  View All →
-                </Link>
-              </div>
-              {discountedProducts.loading ? (
-                <ProductGridSkeleton count={4} />
-              ) : discountedProducts.error ? (
-                <div className="bg-white/50 backdrop-blur-sm p-8 rounded-2xl border border-red-100 text-center">
-                  <p className="text-red-600 font-medium">Offers temporarily unavailable</p>
-                </div>
-              ) : (
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                  {discountedProducts.data.map((product) => (
-                    <ProductCard key={product.id} product={product} />
-                  ))}
-                </div>
-              )}
-            </div>
-          </section>
-        )}
+        <MarqueeOffers />
       </ErrorBoundary>
 
       {/* Recently Viewed */}

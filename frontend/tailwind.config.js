@@ -43,6 +43,7 @@ export default {
         'slide-down': 'slideDown 0.3s ease-out',
         'scale-in': 'scaleIn 0.2s ease-out',
         shimmer: 'shimmer 1.5s infinite linear',
+        marquee: 'marquee 25s linear infinite',
       },
       keyframes: {
         fadeIn: {
@@ -64,6 +65,10 @@ export default {
         shimmer: {
           '0%': { backgroundPosition: '-200% 0' },
           '100%': { backgroundPosition: '200% 0' },
+        },
+        marquee: {
+          '0%': { transform: 'translateX(0%)' },
+          '100%': { transform: 'translateX(-50%)' },
         },
       },
     },
