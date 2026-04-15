@@ -183,14 +183,48 @@ export default function AboutUs(): React.ReactElement {
             <p className="text-surface-500 mt-2 text-sm">{t('about_team_subtitle')}</p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-3xl">
-            <TeamCard
-              gradient="from-primary-300 to-primary-500"
-              name={t('about_member1_name')}
-              role={t('about_member1_role')}
-              bio={t('about_member1_bio')}
-              imageUrl={t('about_member1_image')}
-            />
+          {/* Member 1 – Managing Director (same layout as Founder) */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-16 items-center mb-16">
+            <div className="relative flex justify-center md:justify-start">
+              <div className="relative w-64 h-64 md:w-80 md:h-80">
+                <div className="w-full h-full rounded-full bg-gradient-to-br from-primary-200 to-primary-400 overflow-hidden flex items-center justify-center shadow-xl">
+                  {t('about_member1_image') ? (
+                    <img
+                      src={t('about_member1_image')}
+                      alt={t('about_member1_name')}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <svg className="w-40 h-40 text-white/60" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z" />
+                    </svg>
+                  )}
+                </div>
+                <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 flex gap-2 bg-white rounded-full px-4 py-2 shadow-lg border border-surface-100">
+                  {[ShareIcon, MailIcon, UserIcon].map((Icon, i) => (
+                    <button key={i} className="w-7 h-7 rounded-full bg-surface-100 flex items-center justify-center hover:bg-primary-100 transition-colors">
+                      <Icon className="w-4 h-4 text-surface-600" />
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <p className="text-xs font-bold uppercase tracking-widest text-primary-500 mb-3">
+                {t('about_member1_role')}
+              </p>
+              <h3 className="text-2xl md:text-3xl font-bold text-surface-900 leading-tight mb-6 tracking-tight">
+                {t('about_member1_name')}
+              </h3>
+              <div className="space-y-4 text-surface-500 text-sm leading-relaxed">
+                <p>{t('about_member1_bio')}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Member 2 – card style */}
+          <div className="max-w-3xl">
             <TeamCard
               gradient="from-surface-600 to-surface-800"
               name={t('about_member2_name')}
