@@ -180,7 +180,7 @@ export default function HomePage(): React.ReactElement {
               </button>
             </div>
           ) : latestProducts.data.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
               {latestProducts.data.map((product) => (
                 <ProductCard key={product.id} product={product} />
               ))}
@@ -212,7 +212,7 @@ export default function HomePage(): React.ReactElement {
                   <p className="text-red-600 font-medium">Offers temporarily unavailable</p>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                   {discountedProducts.data.map((product) => (
                     <ProductCard key={product.id} product={product} />
                   ))}

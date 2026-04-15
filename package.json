@@ -8,5 +8,9 @@
   },
   "devDependencies": {
     "concurrently": "^8.2.2"
+  },
+  "dependencies": {
+    "path": "^0.12.7",
+    "url": "^0.11.4"
   }
 }

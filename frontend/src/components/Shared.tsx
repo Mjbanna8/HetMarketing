@@ -39,7 +39,7 @@ export function ProductCardSkeleton(): React.ReactElement {
 
 export function ProductGridSkeleton({ count = 12 }: { count?: number }): React.ReactElement {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
       {Array.from({ length: count }, (_, i) => (
         <ProductCardSkeleton key={i} />
       ))}

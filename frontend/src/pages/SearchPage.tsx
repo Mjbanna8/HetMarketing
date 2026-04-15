@@ -23,7 +23,7 @@ export default function SearchPage(): React.ReactElement {
       <h1 className="text-2xl md:text-3xl font-bold text-surface-900 mb-2">Search Results</h1>
       {query && <p className="text-surface-500 mb-8">Showing results for &ldquo;{query}&rdquo;</p>}
       {loading ? <ProductGridSkeleton count={8} /> : products.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {products.map((p) => <ProductCard key={p.id} product={p} />)}
         </div>
       ) : (
