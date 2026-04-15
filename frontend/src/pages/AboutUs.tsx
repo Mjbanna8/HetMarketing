@@ -15,17 +15,20 @@ const defaults: Record<string, string> = {
   about_feature3_desc: "By cutting out the middleman and traditional storefront costs, we pass the editorial savings directly to you.",
   about_founder_label: "Founder's Note",
   about_founder_quote: '"We\'re returning the \'Human\' to Digital Commerce."',
-  about_founder_bio1: "My name is Hitesh, and I started HetMarketing with a simple observation: modern e-commerce has become too cold, too mechanical. We missed the feeling of talking to a merchant who understands our needs.",
+  about_founder_bio1: "My name is Mouryrajsinh Jadeja, and I started HetMarketing with a simple observation: modern e-commerce has become too cold, too mechanical. We missed the feeling of talking to a merchant who understands our needs.",
   about_founder_bio2: "HetMarketing isn't just a platform; it's a bridge. By leveraging WhatsApp, we create a shopping experience that feels like a conversation with a trusted friend. Our mission is to curate the finest products and deliver them with the immediacy that the modern world demands.",
-  about_founder_name: "Hitesh, Founder of HetMarketing",
+  about_founder_name: "Mouryrajsinh, Founder of HetMarketing",
+  about_founder_image: "",
   about_team_title: "The Precision Curators",
   about_team_subtitle: "The minds behind the invisible concierge experience.",
-  about_member1_name: "Sarah Chen",
+  about_member1_name: "Privet",
   about_member1_role: "Head of Curation",
-  about_member1_bio: "Sarah leads our vetting team, ensuring every brand that joins HetMarketing meets our high-gloss editorial standards.",
-  about_member2_name: "Marcus Thorne",
+  about_member1_bio: "leads our vetting team, ensuring every brand that joins HetMarketing meets our high-gloss editorial standards.",
+  about_member1_image: "",
+  about_member2_name: "Privet",
   about_member2_role: "Chief Integrationist",
-  about_member2_bio: "Marcus oversees our API architecture, making the WhatsApp commerce experience seamless and lightning-fast.",
+  about_member2_bio: "oversees our API architecture, making the WhatsApp commerce experience seamless and lightning-fast.",
+  about_member2_image: "",
   about_cta_headline: "Ready to Shop Differently?",
   about_cta_subtext: "Join thousands of shoppers who have traded complicated apps for simple conversations.",
 };
@@ -134,9 +137,17 @@ export default function AboutUs(): React.ReactElement {
           <div className="relative flex justify-center md:justify-start">
             <div className="relative w-64 h-64 md:w-80 md:h-80">
               <div className="w-full h-full rounded-full bg-gradient-to-br from-surface-200 to-surface-300 overflow-hidden flex items-center justify-center shadow-xl">
-                <svg className="w-40 h-40 text-surface-400" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z" />
-                </svg>
+                {t('about_founder_image') ? (
+                  <img
+                    src={t('about_founder_image')}
+                    alt={t('about_founder_name')}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <svg className="w-40 h-40 text-surface-400" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z" />
+                  </svg>
+                )}
               </div>
               <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 flex gap-2 bg-white rounded-full px-4 py-2 shadow-lg border border-surface-100">
                 {[ShareIcon, MailIcon, UserIcon].map((Icon, i) => (
@@ -178,12 +189,14 @@ export default function AboutUs(): React.ReactElement {
               name={t('about_member1_name')}
               role={t('about_member1_role')}
               bio={t('about_member1_bio')}
+              imageUrl={t('about_member1_image')}
             />
             <TeamCard
               gradient="from-surface-600 to-surface-800"
               name={t('about_member2_name')}
               role={t('about_member2_role')}
               bio={t('about_member2_bio')}
+              imageUrl={t('about_member2_image')}
             />
           </div>
         </div>
@@ -282,19 +295,24 @@ function FeatureCard({
 }
 
 function TeamCard({
-  gradient, name, role, bio,
+  gradient, name, role, bio, imageUrl,
 }: {
   gradient: string;
   name: string;
   role: string;
   bio: string;
+  imageUrl?: string;
 }) {
   return (
     <div className="flex items-start gap-4 p-6 rounded-2xl bg-surface-50 hover:bg-white hover:shadow-md transition-all duration-300">
-      <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${gradient} shrink-0 flex items-center justify-center`}>
-        <svg className="w-9 h-9 text-white" fill="currentColor" viewBox="0 0 24 24">
-          <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z" />
-        </svg>
+      <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${gradient} shrink-0 flex items-center justify-center overflow-hidden`}>
+        {imageUrl ? (
+          <img src={imageUrl} alt={name} className="w-full h-full object-cover" />
+        ) : (
+          <svg className="w-9 h-9 text-white" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z" />
+          </svg>
+        )}
       </div>
       <div>
         <h3 className="font-bold text-surface-900 text-base">{name}</h3>

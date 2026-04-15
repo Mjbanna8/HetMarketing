@@ -57,6 +57,10 @@ router.get('/dashboard/chart', adminController.getDashboardChart);
 router.get('/settings', adminController.getSettings);
 router.put('/settings', validate(updateSettingsSchema), adminController.updateSettings);
 
+// About page image uploads
+router.post('/about/upload-image', upload.single('image'), adminController.uploadAboutImage);
+router.delete('/about/delete-image', adminController.deleteAboutImage);
+
 // Users
 router.get('/users/stats', adminController.getAdminUsersStats);
 router.get('/users', adminController.getAdminUsers);

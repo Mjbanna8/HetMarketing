@@ -169,4 +169,13 @@ export const adminApi = {
 
   getUserStats: () =>
     api.get<ApiResponse<import('../types').AdminUserStats>>('/admin/users/stats'),
+
+  // About page images
+  uploadAboutImage: (formData: FormData) =>
+    api.post<ApiResponse<{ url: string; settingKey: string }>>('/admin/about/upload-image', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    }),
+
+  deleteAboutImage: (settingKey: string) =>
+    api.delete<ApiResponse>('/admin/about/delete-image', { data: { settingKey } }),
 };

@@ -5,6 +5,7 @@ import * as productService from '../services/productService.js';
 import * as categoryService from '../services/categoryService.js';
 import * as orderService from '../services/orderService.js';
 import * as settingsService from '../services/settingsService.js';
+import { uploadToCloudinary, deleteFromCloudinary } from '../utils/cloudinary.js';
 
 // Admin Products
 export const getAdminProducts = asyncHandler(async (req: Request, res: Response): Promise<void> => {
@@ -334,5 +335,66 @@ export const bulkDeleteAdminUsers = asyncHandler(async (req: Request, res: Respo
   console.log(`Admin bulk deleted ${count} users at ${new Date().toISOString()}`);
 
   res.json(successResponse({ deleted: count, message: `${count} users deleted successfully` }));
+});
+
+// About page image uploads
+const ALLOWED_ABOUT_IMAGE_KEYS = [
+  'about_founder_image',
+  'about_member1_image',
+  'about_member2_image',
+];
+
+export const uploadAboutImage = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const { settingKey } = req.body;
+  const file = req.file;
+
+  if (!file) {
+    res.status(400).json({ success: false, error: 'No image file provided' });
+    return;
+  }
+
+  if (!settingKey || !ALLOWED_ABOUT_IMAGE_KEYS.includes(settingKey)) {
+    res.status(400).json({ success: false, error: `Invalid settingKey. Must be one of: ${ALLOWED_ABOUT_IMAGE_KEYS.join(', ')}` });
+    return;
+  }
+
+  // Delete old image from Cloudinary if one exists
+  const oldPublicId = await settingsService.getSetting(`${settingKey}_public_id`);
+  if (oldPublicId) {
+    try { await deleteFromCloudinary(oldPublicId); } catch { /* ignore */ }
+  }
+
+  // Upload new image
+  const result = await uploadToCloudinary(file.buffer, 'about');
+
+  // Persist url + publicId in SiteSetting
+  await settingsService.updateSettings([
+    { key: settingKey, value: result.url },
+    { key: `${settingKey}_public_id`, value: result.publicId },
+  ]);
+
+  res.json(successResponse({ url: result.url, settingKey }));
+});
+
+export const deleteAboutImage = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const { settingKey } = req.body;
+
+  if (!settingKey || !ALLOWED_ABOUT_IMAGE_KEYS.includes(settingKey)) {
+    res.status(400).json({ success: false, error: 'Invalid settingKey' });
+    return;
+  }
+
+  const publicId = await settingsService.getSetting(`${settingKey}_public_id`);
+  if (publicId) {
+    try { await deleteFromCloudinary(publicId); } catch { /* ignore */ }
+  }
+
+  // Clear both keys
+  await settingsService.updateSettings([
+    { key: settingKey, value: '' },
+    { key: `${settingKey}_public_id`, value: '' },
+  ]);
+
+  res.json(successResponse({ message: 'Image removed', settingKey }));
 });
 
