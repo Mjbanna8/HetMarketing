@@ -43,7 +43,7 @@ export default {
         'slide-down': 'slideDown 0.3s ease-out',
         'scale-in': 'scaleIn 0.2s ease-out',
         shimmer: 'shimmer 1.5s infinite linear',
-        marquee: 'marquee 18s linear infinite',
+        marquee: 'marquee 10s linear infinite',
       },
       keyframes: {
         fadeIn: {
