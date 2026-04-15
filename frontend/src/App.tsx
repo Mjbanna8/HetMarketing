@@ -18,6 +18,7 @@ const ResetPasswordPage = lazy(() => import('./pages/ResetPasswordPage'));
 const AccountPage = lazy(() => import('./pages/AccountPage'));
 const MyOrdersPage = lazy(() => import('./pages/MyOrdersPage'));
 const OrderConfirmPage = lazy(() => import('./pages/OrderConfirmPage'));
+const AboutUs = lazy(() => import('./pages/AboutUs'));
 
 // Lazy-loaded admin pages
 const AdminLayout = lazy(() => import('./components/AdminLayout'));
@@ -29,6 +30,7 @@ const AdminCategoriesPage = lazy(() => import('./pages/admin/AdminCategoriesPage
 const AdminOrdersPage = lazy(() => import('./pages/admin/AdminOrdersPage'));
 const AdminSettingsPage = lazy(() => import('./pages/admin/AdminSettingsPage'));
 const AdminUsersPage = lazy(() => import('./pages/admin/UsersPage'));
+const AdminAboutPage = lazy(() => import('./pages/admin/AdminAboutPage'));
 
 function AppInitializer({ children }: { children: React.ReactNode }): React.ReactElement {
   useInitializeAuth();
@@ -58,6 +60,7 @@ export default function App(): React.ReactElement {
                 <Route path="/account" element={<AccountPage />} />
                 <Route path="/account/orders" element={<MyOrdersPage />} />
                 <Route path="/order-confirm/:id" element={<OrderConfirmPage />} />
+                <Route path="/about" element={<AboutUs />} />
               </Route>
 
               {/* Admin Routes */}
@@ -72,6 +75,7 @@ export default function App(): React.ReactElement {
                 <Route path="orders" element={<AdminOrdersPage />} />
                 <Route path="users" element={<AdminUsersPage />} />
                 <Route path="settings" element={<AdminSettingsPage />} />
+                <Route path="about" element={<AdminAboutPage />} />
                 <Route path="users" element={<AdminUsersPage />} />
               </Route>
 

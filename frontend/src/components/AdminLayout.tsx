@@ -11,6 +11,7 @@ const navItems = [
   { label: 'Categories', path: '/admin/categories', icon: '🏷️' },
   { label: 'Orders', path: '/admin/orders', icon: '🛒' },
   { label: 'Users', path: '/admin/users', icon: '👥' },
+  { label: 'About Page', path: '/admin/about', icon: '📄' },
   { label: 'Settings', path: '/admin/settings', icon: '⚙️' },
 ];
 

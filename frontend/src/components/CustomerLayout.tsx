@@ -135,6 +135,7 @@ function Header(): React.ReactElement {
           {/* Desktop Nav */}
           <nav className="hidden md:flex items-center gap-1">
             <Link to="/products" className="btn-ghost text-sm">Products</Link>
+            <Link to="/about" className="btn-ghost text-sm">About</Link>
             {isAuthenticated ? (
               <>
                 <Link to="/account" className="btn-ghost text-sm">
@@ -186,6 +187,7 @@ function Header(): React.ReactElement {
             </div>
             <div className="flex flex-col">
               <Link to="/products" className="py-3 text-surface-700 font-medium" onClick={() => setMobileMenuOpen(false)}>Products</Link>
+              <Link to="/about" className="py-3 text-surface-700 font-medium" onClick={() => setMobileMenuOpen(false)}>About</Link>
               {isAuthenticated ? (
                 <>
                   <Link to="/account" className="py-3 text-surface-700 font-medium" onClick={() => setMobileMenuOpen(false)}>My Account</Link>
