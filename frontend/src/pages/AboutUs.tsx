@@ -39,7 +39,7 @@ export default function AboutUs(): React.ReactElement {
         setC(prev => {
           const next = { ...prev };
           // Overlay any about_* keys returned by the public settings endpoint
-          for (const [k, v] of Object.entries(data.data as Record<string, string>)) {
+          for (const [k, v] of Object.entries(data.data as unknown as Record<string, string>)) {
             if (k.startsWith('about_') && v) next[k] = v;
           }
           return next;
