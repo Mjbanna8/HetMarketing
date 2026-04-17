@@ -12,6 +12,7 @@ import productRoutes from './routes/productRoutes.js';
 import orderRoutes from './routes/orderRoutes.js';
 import adminRoutes, { publicCategoriesRouter } from './routes/adminRoutes.js';
 import { getPublicSettings } from './controllers/settingsController.js';
+import { getSitemap, safeSeoInterceptor, getProductSeoMetadata } from './controllers/seoController.js';
 
 import { prisma } from './utils/prisma.js';
 
@@ -100,6 +101,15 @@ app.use('/api/orders', orderRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/categories', publicCategoriesRouter);
 app.get('/api/settings', getPublicSettings);
+
+// SEO Routes
+app.get('/sitemap.xml', getSitemap);
+app.get('/api/seo/metadata/:slug', getProductSeoMetadata);
+app.get('/seo-products/:slug', safeSeoInterceptor); // Safe SSR tag injector endpoint
+
+// Catch-all to serve statically if needed (though mostly Vercel handles this in prod)
+// app.get('*', ...) can break the API structure if deployed as Monolith. 
+// We are restricting the crawler proxy to a specific endpoint.
 
 // Health check
 app.get('/api/health', (_req, res) => {

@@ -97,6 +97,7 @@ model ProductImage {
   product      Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
   url          String
   cdnPublicId  String
+  altText      String?
   displayOrder Int      @default(0)
   isPrimary    Boolean  @default(false)
   createdAt    DateTime @default(now())

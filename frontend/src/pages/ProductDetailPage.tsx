@@ -7,6 +7,9 @@ import { useTrackProductView } from '../hooks';
 import { formatINR, buildOrderMessage, buildWhatsAppUrl, openWhatsApp, getStatusBadgeColor, getProductStatusLabel } from '../utils';
 import { Modal, Spinner, PageLoader, ProductCard } from '../components/Shared';
 import toast from 'react-hot-toast';
+import { SEO } from '../components/Shared/SEO';
+import { generateProductSchema } from '../utils/seoUtils';
+import { Helmet } from 'react-helmet-async';
 
 export default function ProductDetailPage(): React.ReactElement {
   const { slug } = useParams<{ slug: string }>();
@@ -185,8 +188,22 @@ export default function ProductDetailPage(): React.ReactElement {
     }
   };
 
+  const productUrl = `${window.location.origin}/products/${product.slug}`;
+  const schema = generateProductSchema(product, productUrl);
+
   return (
     <div className="container-page py-8 md:py-12">
+      <SEO 
+        title={product.name} 
+        description={product.description.replace(/<[^>]*>?/gm, '').substring(0, 150) + '...'} 
+        image={product.images.find(img => img.isPrimary)?.url || product.images[0]?.url} 
+        url={productUrl}
+      />
+      <Helmet>
+        <script type="application/ld+json">
+          {JSON.stringify(schema)}
+        </script>
+      </Helmet>
       <button 
         onClick={() => navigate(-1)} 
         className="flex items-center gap-2 text-surface-600 hover:text-surface-900 font-medium mb-6 transition-colors w-fit"
