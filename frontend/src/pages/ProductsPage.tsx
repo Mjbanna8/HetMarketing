@@ -36,13 +36,14 @@ export default function ProductsPage(): React.ReactElement {
         page: currentPage,
         limit: 12,
       });
-      if (data.data) {
+      const resultData = data.data;
+      if (resultData) {
         if (append) {
-          setProducts((prev) => [...prev, ...data.data.items]);
+          setProducts((prev) => [...prev, ...resultData.items]);
         } else {
-          setProducts(data.data.items);
+          setProducts(resultData.items);
         }
-        setTotal(data.data.total);
+        setTotal(resultData.total);
       }
     } catch {
       if (!append) setProducts([]);
