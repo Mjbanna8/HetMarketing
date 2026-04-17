@@ -187,6 +187,15 @@ export default function ProductDetailPage(): React.ReactElement {
 
   return (
     <div className="container-page py-8 md:py-12">
+      <button 
+        onClick={() => navigate(-1)} 
+        className="flex items-center gap-2 text-surface-600 hover:text-surface-900 font-medium mb-6 transition-colors w-fit"
+      >
+        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+        </svg>
+        Back
+      </button>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12">
         {/* Image Gallery */}
         <div>

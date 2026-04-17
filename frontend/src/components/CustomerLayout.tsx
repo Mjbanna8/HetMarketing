@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useLocation, Outlet } from 'react-router-dom';
+import { FiHome, FiShoppingBag, FiInfo } from 'react-icons/fi';
 import { useAuthStore, useSettingsStore } from '../store';
 import { useDebounce } from '../hooks';
 import { productsApi, authApi } from '../api';
@@ -253,6 +254,39 @@ function Footer(): React.ReactElement {
   );
 }
 
+function BottomNav(): React.ReactElement {
+  const location = useLocation();
+  
+  const navItems = [
+    { name: 'Home', path: '/', icon: FiHome },
+    { name: 'Product', path: '/products', icon: FiShoppingBag },
+    { name: 'About', path: '/about', icon: FiInfo },
+  ];
+
+  return (
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-surface-200 z-50">
+      <div className="flex justify-around items-center h-16">
+        {navItems.map((item) => {
+          const Icon = item.icon;
+          const isActive = location.pathname === item.path;
+          return (
+            <Link
+              key={item.name}
+              to={item.path}
+              className={`flex flex-col items-center justify-center w-full h-full space-y-1 ${
+                isActive ? 'text-primary-600' : 'text-surface-500 hover:text-surface-900'
+              }`}
+            >
+              <Icon className="w-6 h-6" />
+              <span className="text-[10px] font-medium leading-none">{item.name}</span>
+            </Link>
+          );
+        })}
+      </div>
+    </nav>
+  );
+}
+
 export default function CustomerLayout(): React.ReactElement {
   const location = useLocation();
 
@@ -263,10 +297,11 @@ export default function CustomerLayout(): React.ReactElement {
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
-      <main className="flex-1">
+      <main className="flex-1 pb-16 md:pb-0">
         <Outlet />
       </main>
       <Footer />
+      <BottomNav />
     </div>
   );
 }
