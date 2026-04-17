@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /login
+Disallow: /dashboard
+Disallow: /api/
+Disallow: /private/
+Disallow: /404
+Disallow: /500
+Sitemap: https://hetmarketing.tech/sitemap.xml
