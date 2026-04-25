@@ -81,19 +81,6 @@ app.use(cookieParser());
 // Rate limiting
 app.use('/api/', generalLimiter);
 
-// HTTPS redirect (when not behind reverse proxy)
-app.use((req, res, next) => {
-  if (
-    config.nodeEnv === 'production' &&
-    req.headers['x-forwarded-proto'] !== 'https' &&
-    !req.headers.host?.includes('localhost')
-  ) {
-    res.redirect(301, `https://${req.headers.host}${req.url}`);
-    return;
-  }
-  next();
-});
-
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
