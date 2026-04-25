@@ -4,6 +4,7 @@
   "description": "WhatsApp-integrated e-commerce backend",
   "main": "dist/server.js",
   "scripts": {
+    "start": "tsx src/server.ts",
     "dev": "tsx watch src/server.ts",
     "build": "prisma generate && tsc",
     "start:prod": "node dist/server.js",
