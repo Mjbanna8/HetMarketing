@@ -11,6 +11,29 @@ export const registerSchema = z.object({
   path: ['confirmPassword'],
 });
 
+const otpRegistrationBaseSchema = z.object({
+  fullName: z.string().min(2, 'Full name must be at least 2 characters').max(60, 'Full name must be at most 60 characters').regex(/^[a-zA-Z\s]+$/, 'Name must contain letters only').trim(),
+  email: z.string().email('Please enter a valid email address').toLowerCase().trim(),
+  mobile: z.string().regex(/^\+[1-9]\d{9,14}$/, 'Mobile must include country code (e.g., +919999999999)').trim(),
+  password: z.string().regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#]).{8,}$/, 'Password too weak'),
+});
+
+export const registerOtpSendSchema = otpRegistrationBaseSchema.extend({
+  confirmPassword: z.string(),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: 'Passwords do not match',
+  path: ['confirmPassword'],
+});
+
+export const registerOtpVerifySchema = otpRegistrationBaseSchema.extend({
+  otp: z.string().regex(/^\d{6}$/, 'OTP must be a 6-digit code'),
+});
+
+export const registerOtpResendSchema = z.object({
+  email: z.string().email('Please enter a valid email address').toLowerCase().trim(),
+  mobile: z.string().regex(/^\+[1-9]\d{9,14}$/, 'Mobile must include country code (e.g., +919999999999)').trim(),
+});
+
 export const loginSchema = z.object({
   emailOrMobile: z.string().min(1, 'Email or mobile is required').trim(),
   password: z.string().min(1, 'Password is required'),
@@ -137,6 +160,9 @@ export const bulkActionSchema = z.object({
 });
 
 export type RegisterInput = z.infer<typeof registerSchema>;
+export type RegisterOtpSendInput = z.infer<typeof registerOtpSendSchema>;
+export type RegisterOtpVerifyInput = z.infer<typeof registerOtpVerifySchema>;
+export type RegisterOtpResendInput = z.infer<typeof registerOtpResendSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
 export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>;
 export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;

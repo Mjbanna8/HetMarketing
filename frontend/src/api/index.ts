@@ -16,11 +16,14 @@ export const authApi = {
   register: (data: { fullName: string; email: string; mobile: string; password: string; confirmPassword: string }) =>
     api.post<ApiResponse<{ message: string; userId: string; user: import('../types').User; accessToken: string }>>('/auth/register', data),
 
-  verifyOtp: (data: { userId: string; otp: string }) =>
-    api.post<ApiResponse<{ user: User; accessToken: string }>>('/auth/verify-otp', data),
+  sendRegisterOtp: (data: { fullName: string; email: string; mobile: string; password: string; confirmPassword: string }) =>
+    api.post<ApiResponse<{ message: string; whatsappLink: string | null }>>('/auth/register/send-otp', data),
 
-  resendOtp: (data: { userId: string }) =>
-    api.post<ApiResponse<{ message: string }>>('/auth/resend-otp', data),
+  verifyRegisterOtp: (data: { fullName: string; email: string; mobile: string; password: string; otp: string }) =>
+    api.post<ApiResponse<{ message: string; user: User }>>('/auth/register/verify-otp', data),
+
+  resendRegisterOtp: (data: { email: string; mobile: string }) =>
+    api.post<ApiResponse<{ message: string; whatsappLink: string | null }>>('/auth/register/resend-otp', data),
 
   login: (data: { emailOrMobile: string; password: string }) =>
     api.post<ApiResponse<{ user: User; accessToken: string }>>('/auth/login', data),

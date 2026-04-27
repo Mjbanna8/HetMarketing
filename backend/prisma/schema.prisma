@@ -42,6 +42,19 @@ model User {
   @@map("users")
 }
 
+model OtpVerification {
+  id        String   @id @default(cuid())
+  email     String
+  otp       String
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([email, used, createdAt])
+  @@index([expiresAt])
+  @@map("otp_verifications")
+}
+
 model Admin {
   id              String   @id @default(cuid())
   email           String   @unique
