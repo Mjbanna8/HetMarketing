@@ -1,15 +1,9 @@
-import nodemailer from 'nodemailer';
+import { BrevoClient } from '@getbrevo/brevo';
 import { config } from '../config/index.js';
 import { logger } from './logger.js';
 
-const transporter = nodemailer.createTransport({
-  host: config.smtp.host,
-  port: config.smtp.port,
-  secure: config.smtp.port === 465,
-  auth: {
-    user: config.smtp.user,
-    pass: config.smtp.pass,
-  },
+const brevoClient = new BrevoClient({
+  apiKey: config.brevoApiKey,
 });
 
 interface EmailOptions {
@@ -20,11 +14,11 @@ interface EmailOptions {
 
 export async function sendEmail(options: EmailOptions): Promise<void> {
   try {
-    await transporter.sendMail({
-      from: `"HetMarketing" <${config.smtp.user}>`,
-      to: options.to,
+    await brevoClient.transactionalEmails.sendTransacEmail({
       subject: options.subject,
-      html: options.html,
+      htmlContent: options.html,
+      sender: { name: 'HetMarketing', email: 'mouryrajjadeja@gmail.com' },
+      to: [{ email: options.to }],
     });
     logger.info({ to: options.to, subject: options.subject }, 'Email sent successfully');
   } catch (error) {
@@ -53,7 +47,7 @@ export function buildResetPasswordEmail(resetUrl: string): string {
         <p style="text-align: center; margin: 24px 0;">
           <a href="${resetUrl}" class="btn">Reset Password</a>
         </p>
-        <p class="footer">If you did not request a password reset, please ignore this email. Your password will remain unchanged.</p>
+        <p class="footer">If you did not request a password reset, please ignore this email.</p>
       </div>
     </body>
     </html>

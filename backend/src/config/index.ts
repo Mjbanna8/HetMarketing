@@ -5,6 +5,7 @@ interface Config {
   port: number;
   nodeEnv: string;
   frontendUrl: string;
+  brevoApiKey: string;
   jwt: {
     accessSecret: string;
     refreshSecret: string;
@@ -35,6 +36,7 @@ export const config: Config = {
   port: parseInt(getEnv('PORT', '4000'), 10),
   nodeEnv: getEnv('NODE_ENV', 'development'),
   frontendUrl: getEnv('FRONTEND_URL', 'http://localhost:5173'),
+  brevoApiKey: getEnv('BREVO_API_KEY', ''),
   jwt: {
     accessSecret: getEnv('JWT_ACCESS_SECRET'),
     refreshSecret: getEnv('JWT_REFRESH_SECRET'),
