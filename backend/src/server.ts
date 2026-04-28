@@ -45,7 +45,6 @@ app.use(
 
 // CORS
 const allowedOrigins = [
-  config.frontendUrl, 
   'https://hetmarketing.tech', 
   'https://www.hetmarketing.tech',
   'http://localhost:5173',
