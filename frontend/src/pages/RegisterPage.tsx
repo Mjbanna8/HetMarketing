@@ -1,26 +1,47 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useForm } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import toast from 'react-hot-toast';
 import { authApi } from '../api';
 import { Spinner } from '../components/Shared';
 
+const COUNTRY_CODES = ['+91', '+1', '+44'] as const;
+
+const PHONE_RULES: Record<(typeof COUNTRY_CODES)[number], { minLength: number; maxLength: number; label: string }> = {
+  '+91': { minLength: 10, maxLength: 10, label: 'India' },
+  '+1': { minLength: 10, maxLength: 10, label: 'United States / Canada' },
+  '+44': { minLength: 10, maxLength: 11, label: 'United Kingdom' },
+};
+
+const DEFAULT_COUNTRY_CODE = '+91' as const;
+
 const registerSchema = z.object({
   fullName: z.string().min(2, 'Full name must be at least 2 characters').max(60, 'Full name must be at most 60 characters').regex(/^[a-zA-Z\s]+$/, 'Name must contain letters only').trim(),
   email: z.string().email('Please enter a valid email address').toLowerCase().trim(),
-  mobile: z.string().regex(/^\+[1-9]\d{9,14}$/, 'Include a valid country code and number (e.g., +919999999999)').trim(),
-  password: z.string()
-    .min(8, 'Password must be at least 8 characters')
-    .regex(/[A-Z]/, 'Must contain an uppercase letter')
-    .regex(/[a-z]/, 'Must contain a lowercase letter')
-    .regex(/[0-9]/, 'Must contain a number')
-    .regex(/[^A-Za-z0-9]/, 'Must contain a special character'),
+  countryCode: z.enum(COUNTRY_CODES),
+  phoneNumber: z.string().trim().regex(/^\d+$/, 'Phone number must contain digits only'),
+  password: z.string().min(8, 'Password must be at least 8 characters long'),
   confirmPassword: z.string(),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: 'Passwords do not match',
-  path: ['confirmPassword'],
+}).superRefine((data, ctx) => {
+  const rules = PHONE_RULES[data.countryCode];
+
+  if (data.phoneNumber.length < rules.minLength || data.phoneNumber.length > rules.maxLength) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['phoneNumber'],
+      message: `${rules.label} phone numbers must be ${rules.minLength}${rules.minLength === rules.maxLength ? '' : `-${rules.maxLength}`} digits long`,
+    });
+  }
+
+  if (data.password !== data.confirmPassword) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['confirmPassword'],
+      message: 'Passwords do not match',
+    });
+  }
 });
 
 type RegisterForm = z.infer<typeof registerSchema>;
@@ -44,12 +65,13 @@ export default function RegisterPage(): React.ReactElement {
   const otpRefs = useRef<(HTMLInputElement | null)[]>([]);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const { register, handleSubmit, formState: { errors }, watch, getValues } = useForm<RegisterForm>({
+  const { register, control, handleSubmit, formState: { errors }, watch, getValues } = useForm<RegisterForm>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
       fullName: '',
       email: '',
-      mobile: '',
+      countryCode: DEFAULT_COUNTRY_CODE,
+      phoneNumber: '',
       password: '',
       confirmPassword: '',
     },
@@ -57,6 +79,10 @@ export default function RegisterPage(): React.ReactElement {
 
   const passwordValue = watch('password') || '';
   const emailValue = watch('email');
+  const selectedCountryCode = watch('countryCode') || DEFAULT_COUNTRY_CODE;
+  const selectedPhoneRules = PHONE_RULES[selectedCountryCode as keyof typeof PHONE_RULES];
+
+  const buildMobileNumber = (values: RegisterForm): string => `${values.countryCode}${values.phoneNumber}`;
 
   useEffect(() => {
     return () => {
@@ -90,18 +116,11 @@ export default function RegisterPage(): React.ReactElement {
 
   const getPasswordStrength = (pass: string) => {
     if (!pass) return 0;
-    let score = 0;
-    const hasLetters = /[a-zA-Z]/.test(pass);
-    const hasNumbers = /[0-9]/.test(pass);
-    const hasUpper = /[A-Z]/.test(pass);
-    const hasLower = /[a-z]/.test(pass);
-    const hasSpecial = /[^A-Za-z0-9]/.test(pass);
 
-    if (hasLetters) score = 1;
-    if (hasLetters && hasNumbers) score = 2;
-    if (hasLetters && hasNumbers && (hasUpper || hasSpecial)) score = 3;
-    if (hasUpper && hasLower && hasNumbers && hasSpecial && pass.length >= 8) score = 4;
-    return score;
+    if (pass.length < 8) return 1;
+    if (pass.length < 10) return 2;
+    if (pass.length < 12) return 3;
+    return 4;
   };
 
   const strength = getPasswordStrength(passwordValue);
@@ -111,7 +130,13 @@ export default function RegisterPage(): React.ReactElement {
     setError('');
 
     try {
-      const { data } = await authApi.sendRegisterOtp(formData);
+      const { data } = await authApi.sendRegisterOtp({
+        fullName: formData.fullName,
+        email: formData.email,
+        mobile: buildMobileNumber(formData),
+        password: formData.password,
+        confirmPassword: formData.confirmPassword,
+      });
 
       if (data.data) {
         setStep('otp');
@@ -175,7 +200,7 @@ export default function RegisterPage(): React.ReactElement {
       const { data } = await authApi.verifyRegisterOtp({
         fullName: values.fullName,
         email: values.email,
-        mobile: values.mobile,
+        mobile: buildMobileNumber(values),
         password: values.password,
         otp: otpValue,
       });
@@ -205,7 +230,7 @@ export default function RegisterPage(): React.ReactElement {
       const values = getValues();
       const { data } = await authApi.resendRegisterOtp({
         email: values.email,
-        mobile: values.mobile,
+        mobile: buildMobileNumber(values),
       });
 
       if (data.data) {
@@ -250,15 +275,54 @@ export default function RegisterPage(): React.ReactElement {
               </div>
 
               <div>
-                <label htmlFor="mobile" className="block text-sm font-medium text-surface-700 mb-2">Mobile Number</label>
-                <input
-                  id="mobile"
-                  type="tel"
-                  className={`input-field ${errors.mobile ? 'border-red-400' : ''}`}
-                  placeholder="+919999999999"
-                  {...register('mobile')}
-                />
-                {errors.mobile && <p className="text-red-500 text-sm mt-1">{errors.mobile.message}</p>}
+                <label htmlFor="phoneNumber" className="block text-sm font-medium text-surface-700 mb-2">Mobile Number</label>
+                <div className={`flex rounded-lg border bg-white shadow-sm transition-colors ${errors.countryCode || errors.phoneNumber ? 'border-red-400' : 'border-surface-200 focus-within:border-primary-500 focus-within:ring-2 focus-within:ring-primary-100'}`}>
+                  <Controller
+                    control={control}
+                    name="countryCode"
+                    render={({ field }) => (
+                      <select
+                        id="countryCode"
+                        {...field}
+                        className="w-28 md:w-32 flex-none border-0 bg-transparent px-3 py-3 text-sm font-medium text-surface-700 outline-none focus:ring-0"
+                        aria-label="Country code"
+                      >
+                        {COUNTRY_CODES.map((code) => (
+                          <option key={code} value={code}>
+                            {code}
+                          </option>
+                        ))}
+                      </select>
+                    )}
+                  />
+                  <div className="w-px bg-surface-200" aria-hidden="true" />
+                  <Controller
+                    control={control}
+                    name="phoneNumber"
+                    render={({ field }) => (
+                      <input
+                        id="phoneNumber"
+                        type="tel"
+                        inputMode="numeric"
+                        autoComplete="tel-national"
+                        maxLength={selectedPhoneRules.maxLength}
+                        placeholder={selectedCountryCode === '+91' ? '9876543210' : 'Enter phone number'}
+                        className={`min-w-0 flex-1 border-0 bg-transparent px-3 py-3 text-surface-900 outline-none placeholder:text-surface-400 focus:ring-0 ${errors.phoneNumber ? 'text-red-600' : ''}`}
+                        value={field.value}
+                        onChange={(event) => field.onChange(event.target.value.replace(/\D/g, '').slice(0, selectedPhoneRules.maxLength))}
+                        onBlur={field.onBlur}
+                        name={field.name}
+                        ref={field.ref}
+                      />
+                    )}
+                  />
+                </div>
+                <div className="mt-1 flex items-center justify-between gap-2 text-xs text-surface-500">
+                  <p>Digits only. Selected format starts with {selectedCountryCode}.</p>
+                  <p>{selectedPhoneRules.label}</p>
+                </div>
+                {errors.countryCode && <p className="text-red-500 text-sm mt-1">{errors.countryCode.message}</p>}
+                {errors.phoneNumber && <p className="text-red-500 text-sm mt-1">{errors.phoneNumber.message}</p>}
               </div>
 
               <div>
@@ -268,7 +332,7 @@ export default function RegisterPage(): React.ReactElement {
                     id="register-password"
                     type={showPassword ? 'text' : 'password'}
                     className={`input-field pr-11 ${errors.password ? 'border-red-400' : ''}`}
-                    placeholder="Min 8 chars, uppercase, number, special"
+                    placeholder="Minimum 8 characters"
                     {...register('password')}
                   />
                   <button
@@ -299,9 +363,9 @@ export default function RegisterPage(): React.ReactElement {
                       <div className={`h-full transition-all ${strength >= 4 ? 'bg-green-600' : 'bg-transparent'} w-1/4`} />
                     </div>
                     <p className="text-xs text-surface-500 mt-1">
-                      {strength === 1 && 'Weak (add numbers/symbols)'}
-                      {strength === 2 && 'Fair (add uppercase/symbols)'}
-                      {strength === 3 && 'Good (add remaining rules)'}
+                      {strength === 1 && 'Short password'}
+                      {strength === 2 && 'Good start'}
+                      {strength === 3 && 'Strong length'}
                       {strength === 4 && 'Strong password'}
                     </p>
                   </>

@@ -1,10 +1,17 @@
 import { z } from 'zod';
 
+const e164PhoneSchema = z.preprocess(
+  (value) => (typeof value === 'string' ? value.trim() : value),
+  z.string().regex(/^\+[1-9]\d{9,14}$/, 'Mobile must be in E.164 format (e.g., +919999999999)')
+);
+
+const passwordSchema = z.string().min(8, 'Password must be at least 8 characters long');
+
 export const registerSchema = z.object({
   fullName: z.string().min(2, 'Full name must be at least 2 characters').max(60, 'Full name must be at most 60 characters').regex(/^[a-zA-Z\s]+$/, 'Name must contain letters only').trim(),
   email: z.string().email('Please enter a valid email address').toLowerCase().trim(),
-  mobile: z.string().regex(/^\+[1-9]\d{9,14}$/, 'Mobile must include country code (e.g., +919999999999)').trim(),
-  password: z.string().regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#]).{8,}$/, 'Password too weak'),
+  mobile: e164PhoneSchema,
+  password: passwordSchema,
   confirmPassword: z.string(),
 }).refine((data) => data.password === data.confirmPassword, {
   message: 'Passwords do not match',
@@ -14,8 +21,8 @@ export const registerSchema = z.object({
 const otpRegistrationBaseSchema = z.object({
   fullName: z.string().min(2, 'Full name must be at least 2 characters').max(60, 'Full name must be at most 60 characters').regex(/^[a-zA-Z\s]+$/, 'Name must contain letters only').trim(),
   email: z.string().email('Please enter a valid email address').toLowerCase().trim(),
-  mobile: z.string().regex(/^\+[1-9]\d{9,14}$/, 'Mobile must include country code (e.g., +919999999999)').trim(),
-  password: z.string().regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#]).{8,}$/, 'Password too weak'),
+  mobile: e164PhoneSchema,
+  password: passwordSchema,
 });
 
 export const registerOtpSendSchema = otpRegistrationBaseSchema.extend({
@@ -31,7 +38,7 @@ export const registerOtpVerifySchema = otpRegistrationBaseSchema.extend({
 
 export const registerOtpResendSchema = z.object({
   email: z.string().email('Please enter a valid email address').toLowerCase().trim(),
-  mobile: z.string().regex(/^\+[1-9]\d{9,14}$/, 'Mobile must include country code (e.g., +919999999999)').trim(),
+  mobile: e164PhoneSchema,
 });
 
 export const loginSchema = z.object({
@@ -47,13 +54,7 @@ export const forgotPasswordSchema = z.object({
 
 export const resetPasswordSchema = z.object({
   token: z.string().min(1, 'Reset token is required'),
-  password: z
-    .string()
-    .min(8, 'Password must be at least 8 characters')
-    .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
-    .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
-    .regex(/[0-9]/, 'Password must contain at least one number')
-    .regex(/[^A-Za-z0-9]/, 'Password must contain at least one special character'),
+  password: passwordSchema,
   confirmPassword: z.string(),
 }).refine((data) => data.password === data.confirmPassword, {
   message: 'Passwords do not match',
@@ -74,18 +75,11 @@ export const updateProfileSchema = z.object({
     .optional(),
   mobile: z
     .string()
-    .regex(/^\+\d{10,15}$/, 'Mobile must include country code')
     .trim()
+    .regex(/^\+\d{10,15}$/, 'Mobile must include country code')
     .optional(),
   currentPassword: z.string().optional(),
-  newPassword: z
-    .string()
-    .min(8, 'Password must be at least 8 characters')
-    .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
-    .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
-    .regex(/[0-9]/, 'Password must contain at least one number')
-    .regex(/[^A-Za-z0-9]/, 'Password must contain at least one special character')
-    .optional(),
+  newPassword: passwordSchema.optional(),
 }).refine((data) => {
   if (data.newPassword && !data.currentPassword) {
     return false;

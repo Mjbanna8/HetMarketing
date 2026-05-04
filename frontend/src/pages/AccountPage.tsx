@@ -12,7 +12,7 @@ const profileSchema = z.object({
   fullName: z.string().min(2).max(100).optional(),
   mobile: z.string().regex(/^\+\d{10,15}$/, 'Include country code').optional(),
   currentPassword: z.string().optional(),
-  newPassword: z.string().min(8, 'Min 8 characters').regex(/[A-Z]/, 'Uppercase required').regex(/[0-9]/, 'Number required').regex(/[^A-Za-z0-9]/, 'Special char required').optional().or(z.literal('')),
+  newPassword: z.string().min(8, 'Password must be at least 8 characters long').optional().or(z.literal('')),
 }).refine((d) => { if (d.newPassword && !d.currentPassword) return false; return true; }, { message: 'Current password required', path: ['currentPassword'] });
 
 type ProfileForm = z.infer<typeof profileSchema>;

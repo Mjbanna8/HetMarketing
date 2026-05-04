@@ -8,12 +8,7 @@ import { Spinner } from '../components/Shared';
 import toast from 'react-hot-toast';
 
 const resetSchema = z.object({
-  password: z.string()
-    .min(8, 'Password must be at least 8 characters')
-    .regex(/[A-Z]/, 'Must contain an uppercase letter')
-    .regex(/[a-z]/, 'Must contain a lowercase letter')
-    .regex(/[0-9]/, 'Must contain a number')
-    .regex(/[^A-Za-z0-9]/, 'Must contain a special character'),
+  password: z.string().min(8, 'Password must be at least 8 characters long'),
   confirmPassword: z.string(),
 }).refine((data) => data.password === data.confirmPassword, {
   message: 'Passwords do not match',
@@ -57,7 +52,7 @@ export default function ResetPasswordPage(): React.ReactElement {
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
             <div>
               <label htmlFor="new-password" className="block text-sm font-medium text-surface-700 mb-2">New Password</label>
-              <input id="new-password" type="password" className={`input-field ${errors.password ? 'border-red-400' : ''}`} placeholder="Min 8 chars, uppercase, number, special" {...register('password')} />
+              <input id="new-password" type="password" className={`input-field ${errors.password ? 'border-red-400' : ''}`} placeholder="Minimum 8 characters" {...register('password')} />
               {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password.message}</p>}
             </div>
             <div>
