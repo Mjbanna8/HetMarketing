@@ -48,12 +48,12 @@ export default function AdminLoginPage(): React.ReactElement {
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
           <div>
             <label htmlFor="admin-email" className="block text-sm font-medium text-surface-700 mb-2">Email</label>
-            <input id="admin-email" type="email" className={`input-field ${errors.email ? 'border-red-400' : ''}`} placeholder="admin@store.com" {...register('email')} />
+            <input id="admin-email" type="email" autoComplete="email" className={`input-field ${errors.email ? 'border-red-400' : ''}`} placeholder="admin@store.com" {...register('email')} />
             {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>}
           </div>
           <div>
             <label htmlFor="admin-password" className="block text-sm font-medium text-surface-700 mb-2">Password</label>
-            <input id="admin-password" type="password" className={`input-field ${errors.password ? 'border-red-400' : ''}`} placeholder="Enter password" {...register('password')} />
+            <input id="admin-password" type="password" autoComplete="current-password" className={`input-field ${errors.password ? 'border-red-400' : ''}`} placeholder="Enter password" {...register('password')} />
             {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password.message}</p>}
           </div>
           <button type="submit" className="btn-primary w-full" disabled={loading}>

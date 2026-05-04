@@ -264,13 +264,13 @@ export default function RegisterPage(): React.ReactElement {
             <form onSubmit={handleSubmit(handleSendOtp)} className="space-y-5">
               <div>
                 <label htmlFor="fullName" className="block text-sm font-medium text-surface-700 mb-2">Full Name</label>
-                <input id="fullName" type="text" className={`input-field ${errors.fullName ? 'border-red-400' : ''}`} placeholder="Your full name" {...register('fullName')} />
+                <input id="fullName" type="text" autoComplete="name" className={`input-field ${errors.fullName ? 'border-red-400' : ''}`} placeholder="Your full name" {...register('fullName')} />
                 {errors.fullName && <p className="text-red-500 text-sm mt-1">{errors.fullName.message}</p>}
               </div>
 
               <div>
                 <label htmlFor="email" className="block text-sm font-medium text-surface-700 mb-2">Email</label>
-                <input id="email" type="email" className={`input-field ${errors.email ? 'border-red-400' : ''}`} placeholder="you@example.com" {...register('email')} />
+                <input id="email" type="email" autoComplete="email" className={`input-field ${errors.email ? 'border-red-400' : ''}`} placeholder="you@example.com" {...register('email')} />
                 {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>}
               </div>
 
@@ -311,7 +311,6 @@ export default function RegisterPage(): React.ReactElement {
                         value={field.value}
                         onChange={(event) => field.onChange(event.target.value.replace(/\D/g, '').slice(0, selectedPhoneRules.maxLength))}
                         onBlur={field.onBlur}
-                        name={field.name}
                         ref={field.ref}
                       />
                     )}
@@ -331,6 +330,7 @@ export default function RegisterPage(): React.ReactElement {
                   <input
                     id="register-password"
                     type={showPassword ? 'text' : 'password'}
+                    autoComplete="new-password"
                     className={`input-field pr-11 ${errors.password ? 'border-red-400' : ''}`}
                     placeholder="Minimum 8 characters"
                     {...register('password')}
@@ -380,6 +380,7 @@ export default function RegisterPage(): React.ReactElement {
                   <input
                     id="confirmPassword"
                     type={showConfirmPassword ? 'text' : 'password'}
+                    autoComplete="new-password"
                     className={`input-field pr-11 ${errors.confirmPassword ? 'border-red-400' : ''}`}
                     placeholder="Re-enter your password"
                     {...register('confirmPassword')}

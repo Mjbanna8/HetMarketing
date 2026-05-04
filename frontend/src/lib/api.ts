@@ -29,6 +29,13 @@ const api = axios.create({
 let isRefreshing = false;
 let failedQueue: any[] = [];
 
+const authBypassPaths = ['/auth/login', '/auth/register', '/auth/refresh', '/auth/logout'];
+
+const shouldSkipRefresh = (url?: string): boolean => {
+  if (!url) return false;
+  return authBypassPaths.some((path) => url.includes(path));
+};
+
 const processQueue = (error: AxiosError | null, token: string | null = null) => {
   failedQueue.forEach(prom => {
     if (error) {
@@ -74,6 +81,10 @@ api.interceptors.response.use(
       status: error.response?.status,
       data: error.response?.data,
     });
+
+    if (shouldSkipRefresh(originalRequest?.url)) {
+      return Promise.reject(error);
+    }
 
     // If error is 401 and we haven't tried to refresh yet
     if (error.response?.status === 401 && !originalRequest._retry) {

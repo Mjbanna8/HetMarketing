@@ -52,12 +52,12 @@ export default function ResetPasswordPage(): React.ReactElement {
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
             <div>
               <label htmlFor="new-password" className="block text-sm font-medium text-surface-700 mb-2">New Password</label>
-              <input id="new-password" type="password" className={`input-field ${errors.password ? 'border-red-400' : ''}`} placeholder="Minimum 8 characters" {...register('password')} />
+              <input id="new-password" type="password" autoComplete="new-password" className={`input-field ${errors.password ? 'border-red-400' : ''}`} placeholder="Minimum 8 characters" {...register('password')} />
               {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password.message}</p>}
             </div>
             <div>
               <label htmlFor="confirm-new-password" className="block text-sm font-medium text-surface-700 mb-2">Confirm New Password</label>
-              <input id="confirm-new-password" type="password" className={`input-field ${errors.confirmPassword ? 'border-red-400' : ''}`} placeholder="Re-enter your new password" {...register('confirmPassword')} />
+              <input id="confirm-new-password" type="password" autoComplete="new-password" className={`input-field ${errors.confirmPassword ? 'border-red-400' : ''}`} placeholder="Re-enter your new password" {...register('confirmPassword')} />
               {errors.confirmPassword && <p className="text-red-500 text-sm mt-1">{errors.confirmPassword.message}</p>}
             </div>
             <button type="submit" className="btn-primary w-full" disabled={loading}>

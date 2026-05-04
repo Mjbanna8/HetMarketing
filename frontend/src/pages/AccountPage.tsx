@@ -60,29 +60,29 @@ export default function AccountPage(): React.ReactElement {
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
             <div>
               <label htmlFor="profile-name" className="block text-sm font-medium text-surface-700 mb-2">Full Name</label>
-              <input id="profile-name" type="text" className="input-field" {...register('fullName')} />
+              <input id="profile-name" type="text" autoComplete="name" className="input-field" {...register('fullName')} />
               {errors.fullName && <p className="text-red-500 text-sm mt-1">{errors.fullName.message}</p>}
             </div>
             <div>
               <label className="block text-sm font-medium text-surface-700 mb-2">Email</label>
-              <input type="email" className="input-field bg-surface-50" value={user?.email ?? ''} disabled />
+              <input type="email" className="input-field bg-surface-50" value={user?.email ?? ''} disabled autoComplete="email" name="email" />
               <p className="text-xs text-surface-400 mt-1">Email cannot be changed</p>
             </div>
             <div>
               <label htmlFor="profile-mobile" className="block text-sm font-medium text-surface-700 mb-2">Mobile</label>
-              <input id="profile-mobile" type="tel" className="input-field" {...register('mobile')} />
+              <input id="profile-mobile" type="tel" autoComplete="tel" className="input-field" {...register('mobile')} />
               {errors.mobile && <p className="text-red-500 text-sm mt-1">{errors.mobile.message}</p>}
             </div>
             <hr className="border-surface-100" />
             <p className="text-sm font-semibold text-surface-700">Change Password</p>
             <div>
               <label htmlFor="current-pw" className="block text-sm font-medium text-surface-700 mb-2">Current Password</label>
-              <input id="current-pw" type="password" className="input-field" placeholder="Required to change password" {...register('currentPassword')} />
+              <input id="current-pw" type="password" autoComplete="current-password" className="input-field" placeholder="Required to change password" {...register('currentPassword')} />
               {errors.currentPassword && <p className="text-red-500 text-sm mt-1">{errors.currentPassword.message}</p>}
             </div>
             <div>
               <label htmlFor="new-pw" className="block text-sm font-medium text-surface-700 mb-2">New Password</label>
-              <input id="new-pw" type="password" className="input-field" placeholder="Leave blank to keep current" {...register('newPassword')} />
+              <input id="new-pw" type="password" autoComplete="new-password" className="input-field" placeholder="Leave blank to keep current" {...register('newPassword')} />
               {errors.newPassword && <p className="text-red-500 text-sm mt-1">{errors.newPassword.message}</p>}
             </div>
             <button type="submit" className="btn-primary w-full" disabled={loading}>

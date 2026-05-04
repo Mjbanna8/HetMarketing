@@ -61,6 +61,7 @@ export default function LoginPage(): React.ReactElement {
               <input
                 id="emailOrMobile"
                 type="text"
+                autoComplete="username"
                 className={`input-field ${errors.emailOrMobile ? 'border-red-400 focus:border-red-500' : ''}`}
                 placeholder="you@example.com or +91..."
                 {...register('emailOrMobile')}
@@ -78,6 +79,7 @@ export default function LoginPage(): React.ReactElement {
                 <input
                   id="password"
                   type={showPassword ? 'text' : 'password'}
+                  autoComplete="current-password"
                   className={`input-field pr-11 ${errors.password ? 'border-red-400 focus:border-red-500' : ''}`}
                   placeholder="Enter your password"
                   {...register('password')}

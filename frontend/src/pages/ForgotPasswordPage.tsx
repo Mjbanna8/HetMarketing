@@ -64,7 +64,7 @@ export default function ForgotPasswordPage(): React.ReactElement {
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
             <div>
               <label htmlFor="forgot-email" className="block text-sm font-medium text-surface-700 mb-2">Email Address</label>
-              <input id="forgot-email" type="email" className={`input-field ${errors.email ? 'border-red-400' : ''}`} placeholder="you@example.com" {...register('email')} />
+              <input id="forgot-email" type="email" autoComplete="email" className={`input-field ${errors.email ? 'border-red-400' : ''}`} placeholder="you@example.com" {...register('email')} />
               {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>}
             </div>
             <button type="submit" className="btn-primary w-full" disabled={loading}>
