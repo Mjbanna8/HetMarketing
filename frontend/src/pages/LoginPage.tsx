@@ -15,6 +15,25 @@ const loginSchema = z.object({
 
 type LoginForm = z.infer<typeof loginSchema>;
 
+// Normalize phone number to E.164 format
+const normalizePhone = (phone: string): string => {
+  let cleaned = phone.replace(/\D/g, '');
+
+  if (cleaned.length === 10) {
+    return '+91' + cleaned;
+  }
+
+  if (cleaned.startsWith('91') && cleaned.length === 12) {
+    return '+' + cleaned;
+  }
+
+  if (phone.startsWith('+')) {
+    return phone;
+  }
+
+  return '+91' + cleaned;
+};
+
 export default function LoginPage(): React.ReactElement {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -30,7 +49,15 @@ export default function LoginPage(): React.ReactElement {
   const onSubmit = async (formData: LoginForm) => {
     setLoading(true);
     try {
-      const { data } = await authApi.login(formData);
+      // Normalize phone if it's not an email
+      const normalizedData = {
+        ...formData,
+        emailOrMobile: formData.emailOrMobile.includes('@')
+          ? formData.emailOrMobile
+          : normalizePhone(formData.emailOrMobile),
+      };
+
+      const { data } = await authApi.login(normalizedData);
       if (data.data) {
         setAuth(data.data.user, data.data.accessToken);
         toast.success('Welcome back!');
@@ -63,7 +90,7 @@ export default function LoginPage(): React.ReactElement {
                 type="text"
                 autoComplete="username"
                 className={`input-field ${errors.emailOrMobile ? 'border-red-400 focus:border-red-500' : ''}`}
-                placeholder="you@example.com or +91..."
+                placeholder="Enter email or mobile number"
                 {...register('emailOrMobile')}
               />
               {errors.emailOrMobile && (

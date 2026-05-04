@@ -32,6 +32,21 @@ const RESET_TOKEN_EXPIRY_MS = 60 * 60 * 1000;
 
 const resetTokenStore = new Map<string, { userId: string; expiresAt: Date; used: boolean }>();
 
+// Normalize phone number to E.164 format
+const normalizePhone = (phone: string): string => {
+  let cleaned = phone.replace(/\D/g, '');
+
+  if (cleaned.length === 10) {
+    return '+91' + cleaned;
+  }
+
+  if (cleaned.startsWith('91') && cleaned.length === 12) {
+    return '+' + cleaned;
+  }
+
+  return phone;
+};
+
 interface AuthTokens {
   accessToken: string;
   refreshToken: string;
@@ -91,10 +106,13 @@ export async function loginUser(
 ): Promise<{ user: UserInfo; tokens: AuthTokens }> {
   const { emailOrMobile, password } = input;
 
+  // Determine if input is email or phone
+  const isEmail = emailOrMobile.includes('@');
+  
   const user = await prisma.user.findFirst({
-    where: {
-      OR: [{ email: emailOrMobile.toLowerCase() }, { mobile: emailOrMobile }],
-    },
+    where: isEmail
+      ? { email: emailOrMobile.toLowerCase() }
+      : { mobile: normalizePhone(emailOrMobile) },
   });
 
   if (!user) {
