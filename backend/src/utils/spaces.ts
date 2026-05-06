@@ -25,8 +25,12 @@ export interface SpacesUploadResult {
   cdnPublicId: string;
 }
 
-export async function uploadToSpaces(buffer: Buffer, _mimeType: string): Promise<SpacesUploadResult> {
-  const key = `hetmarketing/products/${randomUUID()}.webp`;
+export async function uploadToSpaces(
+  buffer: Buffer,
+  _mimeType: string,
+  folder = 'hetmarketing/products'
+): Promise<SpacesUploadResult> {
+  const key = `${folder}/${randomUUID()}.webp`;
   const webpBuffer = await sharp(buffer).webp({ quality: 80 }).toBuffer();
 
   await spacesClient.send(

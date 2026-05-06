@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import axios from 'axios';
 import { PrismaClient } from '@prisma/client';
 import { uploadToSpaces } from '../src/utils/spaces';

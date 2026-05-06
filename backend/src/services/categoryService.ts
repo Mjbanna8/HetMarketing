@@ -1,7 +1,18 @@
 import { prisma } from '../utils/prisma.js';
 import { slugify } from '../utils/helpers.js';
 import { NotFoundError, BadRequestError, ConflictError } from '../utils/errors.js';
-import { uploadToCloudinary, deleteFromCloudinary } from '../utils/cloudinary.js';
+import { uploadToSpaces, deleteFromSpaces } from '../utils/spaces.js';
+
+/** Derives the DO Spaces object key from a CDN URL.
+ *  CDN format: https://jadeja-video.sgp1.cdn.digitaloceanspaces.com/<key>
+ *  Returns null for non-Spaces URLs so legacy Cloudinary icons are skipped safely.
+ */
+function keyFromCdnUrl(url: string): string | null {
+  const prefix = 'cdn.digitaloceanspaces.com/';
+  const idx = url.indexOf(prefix);
+  if (idx === -1) return null;
+  return url.slice(idx + prefix.length);
+}
 
 interface CategoryData {
   id: string;
@@ -45,7 +56,7 @@ export async function createCategory(
 
   let iconUrl: string | null = null;
   if (iconBuffer) {
-    const result = await uploadToCloudinary(iconBuffer, 'categories');
+    const result = await uploadToSpaces(iconBuffer, 'image/*', 'hetmarketing/categories');
     iconUrl = result.url;
   }
 
@@ -83,11 +94,15 @@ export async function updateCategory(
   }
 
   if (iconBuffer) {
+    // Delete old icon from Spaces (never throws — only warns)
     if (existing.iconUrl) {
-      const publicId = existing.iconUrl.split('/').slice(-2).join('/').split('.')[0];
-      await deleteFromCloudinary(publicId);
+      const oldKey = keyFromCdnUrl(existing.iconUrl);
+      if (oldKey) {
+        await deleteFromSpaces(oldKey); // deleteFromSpaces already swallows errors
+      }
     }
-    const result = await uploadToCloudinary(iconBuffer, 'categories');
+
+    const result = await uploadToSpaces(iconBuffer, 'image/*', 'hetmarketing/categories');
     updateData.iconUrl = result.url;
   }
 
@@ -127,6 +142,14 @@ export async function deleteCategory(
       where: { categoryId: id },
       data: { categoryId: reassignCategoryId },
     });
+  }
+
+  // Delete icon from Spaces before removing the DB record
+  if (category.iconUrl) {
+    const oldKey = keyFromCdnUrl(category.iconUrl);
+    if (oldKey) {
+      await deleteFromSpaces(oldKey);
+    }
   }
 
   await prisma.category.delete({ where: { id } });

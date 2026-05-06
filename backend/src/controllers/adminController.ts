@@ -5,7 +5,7 @@ import * as productService from '../services/productService.js';
 import * as categoryService from '../services/categoryService.js';
 import * as orderService from '../services/orderService.js';
 import * as settingsService from '../services/settingsService.js';
-import { uploadToCloudinary, deleteFromCloudinary } from '../utils/cloudinary.js';
+import { uploadToSpaces, deleteFromSpaces } from '../utils/spaces.js';
 
 // Admin Products
 export const getAdminProducts = asyncHandler(async (req: Request, res: Response): Promise<void> => {
@@ -41,7 +41,7 @@ export const createProduct = asyncHandler(async (req: Request, res: Response): P
     if (err.message && (err.message.includes('A product with') || err.message.includes('Invalid category'))) {
       throw err; // Let asyncHandler and ErrorHandler deal with validation errors
     }
-    console.error('Cloudinary upload error:', err);
+    console.error('Spaces upload error:', err);
     res.status(500).json({ success: false, error: err?.message ?? 'Image upload failed' });
   }
 });
@@ -66,7 +66,7 @@ export const updateProduct = asyncHandler(async (req: Request, res: Response): P
     if (err.statusCode) {
       throw err; // Let Documented Errors pass to Error Handler
     }
-    console.error('Cloudinary upload error:', err);
+    console.error('Spaces upload error:', err);
     res.status(500).json({ success: false, error: err?.message ?? 'Image upload failed' });
   }
 });
@@ -111,7 +111,7 @@ export const createCategory = asyncHandler(async (req: Request, res: Response): 
     res.status(201).json(successResponse(category));
   } catch (err: any) {
     if (err.statusCode) throw err;
-    console.error('Cloudinary upload error:', err);
+    console.error('Spaces upload error:', err);
     res.status(500).json({ success: false, error: err?.message ?? 'Image upload failed' });
   }
 });
@@ -123,7 +123,7 @@ export const updateCategory = asyncHandler(async (req: Request, res: Response): 
     res.json(successResponse(category));
   } catch (err: any) {
     if (err.statusCode) throw err;
-    console.error('Cloudinary upload error:', err);
+    console.error('Spaces upload error:', err);
     res.status(500).json({ success: false, error: err?.message ?? 'Image upload failed' });
   }
 });
@@ -358,19 +358,19 @@ export const uploadAboutImage = asyncHandler(async (req: Request, res: Response)
     return;
   }
 
-  // Delete old image from Cloudinary if one exists
-  const oldPublicId = await settingsService.getSetting(`${settingKey}_public_id`);
-  if (oldPublicId) {
-    try { await deleteFromCloudinary(oldPublicId); } catch { /* ignore */ }
+  // Delete old image from DO Spaces if one exists (key stored as _public_id)
+  const oldKey = await settingsService.getSetting(`${settingKey}_public_id`);
+  if (oldKey) {
+    await deleteFromSpaces(oldKey); // never throws — warns only
   }
 
-  // Upload new image
-  const result = await uploadToCloudinary(file.buffer, 'about');
+  // Upload new image to hetmarketing/about/<uuid>.webp
+  const result = await uploadToSpaces(file.buffer, file.mimetype, 'hetmarketing/about');
 
-  // Persist url + publicId in SiteSetting
+  // Persist CDN url + Spaces object key in SiteSetting
   await settingsService.updateSettings([
     { key: settingKey, value: result.url },
-    { key: `${settingKey}_public_id`, value: result.publicId },
+    { key: `${settingKey}_public_id`, value: result.cdnPublicId },
   ]);
 
   res.json(successResponse({ url: result.url, settingKey }));
@@ -384,9 +384,9 @@ export const deleteAboutImage = asyncHandler(async (req: Request, res: Response)
     return;
   }
 
-  const publicId = await settingsService.getSetting(`${settingKey}_public_id`);
-  if (publicId) {
-    try { await deleteFromCloudinary(publicId); } catch { /* ignore */ }
+  const oldKey = await settingsService.getSetting(`${settingKey}_public_id`);
+  if (oldKey) {
+    await deleteFromSpaces(oldKey); // never throws — warns only
   }
 
   // Clear both keys
