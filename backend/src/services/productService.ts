@@ -2,7 +2,7 @@ import { Prisma, ProductStatus } from '@prisma/client';
 import { prisma } from '../utils/prisma.js';
 import { slugify } from '../utils/helpers.js';
 import { NotFoundError, BadRequestError } from '../utils/errors.js';
-import { uploadToCloudinary, deleteFromCloudinary } from '../utils/cloudinary.js';
+import { uploadToSpaces, deleteFromSpaces } from '../utils/spaces.js';
 import type { CreateProductInput, UpdateProductInput, ProductQueryInput, BulkActionInput } from '../utils/validators.js';
 
 interface ProductWithImages {
@@ -167,10 +167,10 @@ export async function createProduct(
 
   const imageData: Array<{ url: string; cdnPublicId: string; displayOrder: number; isPrimary: boolean }> = [];
   for (let i = 0; i < imageBuffers.length; i++) {
-    const result = await uploadToCloudinary(imageBuffers[i]);
+    const result = await uploadToSpaces(imageBuffers[i], 'image/*');
     imageData.push({
       url: result.url,
-      cdnPublicId: result.publicId,
+      cdnPublicId: result.cdnPublicId,
       displayOrder: i,
       isPrimary: i === 0,
     });
@@ -235,7 +235,7 @@ export async function updateProduct(
   if (removeImageIds && removeImageIds.length > 0) {
     const imagesToRemove = existing.images.filter((img) => removeImageIds.includes(img.id));
     for (const img of imagesToRemove) {
-      await deleteFromCloudinary(img.cdnPublicId);
+      await deleteFromSpaces(img.cdnPublicId);
     }
     await prisma.productImage.deleteMany({
       where: { id: { in: removeImageIds } },
@@ -245,12 +245,12 @@ export async function updateProduct(
   if (newImageBuffers && newImageBuffers.length > 0) {
     const currentCount = existing.images.length - (removeImageIds?.length ?? 0);
     for (let i = 0; i < newImageBuffers.length; i++) {
-      const result = await uploadToCloudinary(newImageBuffers[i]);
+      const result = await uploadToSpaces(newImageBuffers[i], 'image/*');
       await prisma.productImage.create({
         data: {
           productId: id,
           url: result.url,
-          cdnPublicId: result.publicId,
+          cdnPublicId: result.cdnPublicId,
           displayOrder: currentCount + i,
           isPrimary: currentCount + i === 0,
         },
@@ -310,7 +310,12 @@ export async function hardDeleteProduct(id: string): Promise<void> {
   if (!product.isDeleted) throw new BadRequestError('Product must be soft-deleted first');
 
   for (const img of product.images) {
-    await deleteFromCloudinary(img.cdnPublicId);
+    try {
+      await deleteFromSpaces(img.cdnPublicId);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      console.warn(`Failed to delete image from Spaces for product ${id}: ${message}`);
+    }
   }
 
   await prisma.product.delete({ where: { id } });
