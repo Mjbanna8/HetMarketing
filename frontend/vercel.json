@@ -1,8 +1,33 @@
 {
-  "rewrites": [
+  "redirects": [
     {
       "source": "/(.*)",
-      "destination": "/index.html"
+      "has": [{ "type": "host", "value": "hetmarketing.tech" }],
+      "destination": "https://www.hetmarketing.tech/$1",
+      "permanent": true
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/products/:slug",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": ".*(facebookexternalhit|WhatsApp|Twitterbot|LinkedInBot|Slackbot|TelegramBot|Discordbot|Pinterestbot|redditbot|vkShare|W3C_Validator).*"
+        }
+      ],
+      "destination": "https://api.hetmarketing.tech/seo-products/:slug"
+    },
+    { "source": "/sitemap.xml", "destination": "/api/sitemap" },
+    { "source": "/llms.txt", "destination": "/api/llms" },
+    { "source": "/llms-full.txt", "destination": "/api/llms-full" },
+    { "source": "/((?!api/).*)", "destination": "/index.html" }
+  ],
+  "headers": [
+    {
+      "source": "/robots.txt",
+      "headers": [{ "key": "Content-Type", "value": "text/plain; charset=utf-8" }]
     }
   ]
 }

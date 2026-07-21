@@ -8,8 +8,8 @@ import { formatINR, buildOrderMessage, buildWhatsAppUrl, openWhatsApp, getStatus
 import { Modal, Spinner, PageLoader, ProductCard } from '../components/Shared';
 import toast from 'react-hot-toast';
 import { SEO } from '../components/Shared/SEO';
-import { generateProductSchema } from '../utils/seoUtils';
-import { Helmet } from 'react-helmet-async';
+import { generateProductSchema, generateBreadcrumbSchema, toMetaDescription, SITE_URL } from '../utils/seoUtils';
+import { trackAddToCart, trackPurchase } from '../lib/gtm';
 
 export default function ProductDetailPage(): React.ReactElement {
   const { slug } = useParams<{ slug: string }>();
@@ -128,6 +128,7 @@ export default function ProductDetailPage(): React.ReactElement {
       navigate(`/login?redirect=/products/${product.slug}`);
       return;
     }
+    trackAddToCart({ item_id: product.id, item_name: product.name, price: product.price, quantity, item_category: product.category.name });
     setOrderModalOpen(true);
   };
 
@@ -149,6 +150,15 @@ export default function ProductDetailPage(): React.ReactElement {
 
       if (data.data) {
         const order = data.data;
+
+        // GA4 purchase + generate_lead via GTM dataLayer
+        trackPurchase(order.id, product.price * quantity, {
+          item_id: product.id,
+          item_name: product.name,
+          price: product.price,
+          quantity,
+          item_category: product.category.name,
+        });
 
         // Get settings for WhatsApp number and template
         let settings: SiteSettings = { store_name: 'HetMarketing', store_logo_url: '', whatsapp_number: order.whatsappNumberUsed, contact_email: '' };
@@ -188,22 +198,25 @@ export default function ProductDetailPage(): React.ReactElement {
     }
   };
 
-  const productUrl = `${window.location.origin}/products/${product.slug}`;
-  const schema = generateProductSchema(product, productUrl);
+  const productUrl = `${SITE_URL}/products/${product.slug}`;
+  const productSchema = generateProductSchema(product, productUrl);
+  const breadcrumbSchema = generateBreadcrumbSchema([
+    { name: 'Home', url: `${SITE_URL}/` },
+    { name: product.category.name, url: `${SITE_URL}/products/category/${product.category.slug}` },
+    { name: product.name, url: productUrl },
+  ]);
 
   return (
     <div className="container-page py-8 md:py-12">
-      <SEO 
-        title={product.name} 
-        description={product.description.replace(/<[^>]*>?/gm, '').substring(0, 150) + '...'} 
-        image={product.images.find(img => img.isPrimary)?.url || product.images[0]?.url} 
+      <SEO
+        title={product.name}
+        description={toMetaDescription(product.description)}
+        image={product.images.find(img => img.isPrimary)?.url || product.images[0]?.url}
         url={productUrl}
+        type="product"
+        price={product.price}
+        jsonLd={[productSchema, breadcrumbSchema]}
       />
-      <Helmet>
-        <script type="application/ld+json">
-          {JSON.stringify(schema)}
-        </script>
-      </Helmet>
       <button 
         onClick={() => navigate(-1)} 
         className="flex items-center gap-2 text-surface-600 hover:text-surface-900 font-medium mb-6 transition-colors w-fit"

@@ -1,10 +1,5 @@
 import { Request, Response } from 'express';
 import { prisma } from '../utils/prisma.js';
-import fs from 'fs';
-import path from 'path';
-
-const FRONTEND_DIST = path.join(process.cwd(), '../frontend/dist');
-const INDEX_HTML_PATH = path.join(FRONTEND_DIST, 'index.html');
 
 let cachedSitemap: string | null = null;
 let sitemapTimestamp: number = 0;
@@ -66,42 +61,92 @@ const escapeHtml = (unsafe: string) => {
          .replace(/'/g, "&#039;");
 };
 
-// Safe Interceptor function
+const SITE_URL = 'https://www.hetmarketing.tech';
+const SITE_NAME = 'Het Marketing';
+
+const stripHtml = (html: string, maxLen = 158): string => {
+  const text = html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+  return text.length > maxLen ? `${text.slice(0, maxLen - 1)}…` : text;
+};
+
+/**
+ * Dynamic-rendering endpoint for social scrapers (WhatsApp/Facebook/Twitter/LinkedIn).
+ * Vercel proxies bot user-agents on /products/:slug here, so the scraper sees
+ * fully-rendered meta tags under the original www URL. Self-contained — no
+ * dependency on a frontend build existing on this server.
+ */
 export const safeSeoInterceptor = async (req: Request, res: Response, next: any) => {
   try {
     const { slug } = req.params;
-    
-    // Check if dist/index.html exists (only exists post-build or after run build)
-    if (!fs.existsSync(INDEX_HTML_PATH)) {
-      // For local development when dist/ is not built, fail gracefully
-      res.status(404).json({ error: "Cannot serve HTML in dev mode without frontend dist build." });
-      return;
-    }
 
     const product = await prisma.product.findUnique({
       where: { slug, isDeleted: false },
-      include: { images: true }
+      include: { images: { orderBy: { displayOrder: 'asc' } }, category: true }
     });
 
     if (!product) {
-       res.sendFile(INDEX_HTML_PATH);
-       return;
+      res.status(404).send(`<!doctype html><html lang="en"><head><meta charset="utf-8"><title>${SITE_NAME}</title><meta name="robots" content="noindex"></head><body><a href="${SITE_URL}/products">Browse products</a></body></html>`);
+      return;
     }
 
-    let html = fs.readFileSync(INDEX_HTML_PATH, 'utf8');
+    const title = `${product.name} | ${SITE_NAME}`;
+    const description = stripHtml(product.description);
+    const images = [...product.images].sort((a, b) => Number(b.isPrimary) - Number(a.isPrimary)).map(i => i.url);
+    const primaryImage = images[0] || `${SITE_URL}/logo.png`;
+    const productUrl = `${SITE_URL}/products/${product.slug}`;
 
-    const title = `${product.name} | HetMarketing`;
-    const description = product.description.substring(0, 150) + '...';
-    const primaryImage = product.images.find(img => img.isPrimary)?.url || product.images[0]?.url || 'https://res.cloudinary.com/cloud_name/image/upload/v1234/default.jpg';
-    const productUrl = `${process.env.FRONTEND_URL || 'https://www.hetmarketing.tech'}/products/${product.slug}`;
+    const jsonLd = {
+      '@context': 'https://schema.org/',
+      '@type': 'Product',
+      name: product.name,
+      image: images.length ? images : undefined,
+      description: stripHtml(product.description, 5000),
+      sku: product.id,
+      brand: { '@type': 'Brand', name: SITE_NAME },
+      offers: {
+        '@type': 'Offer',
+        url: productUrl,
+        priceCurrency: 'INR',
+        price: product.price,
+        itemCondition: 'https://schema.org/NewCondition',
+        availability: product.status === 'ACTIVE' ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+      },
+    };
 
-    html = html.replace(/__META_TITLE__/g, escapeHtml(title));
-    html = html.replace(/__META_DESCRIPTION__/g, escapeHtml(description));
-    html = html.replace(/__OG_TITLE__/g, escapeHtml(title));
-    html = html.replace(/__OG_DESCRIPTION__/g, escapeHtml(description));
-    html = html.replace(/__OG_IMAGE__/g, primaryImage);
-    html = html.replace(/__OG_URL__/g, productUrl);
+    const html = `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>${escapeHtml(title)}</title>
+<meta name="description" content="${escapeHtml(description)}">
+<link rel="canonical" href="${productUrl}">
+<meta property="og:type" content="product">
+<meta property="og:site_name" content="${SITE_NAME}">
+<meta property="og:locale" content="en_IN">
+<meta property="og:title" content="${escapeHtml(title)}">
+<meta property="og:description" content="${escapeHtml(description)}">
+<meta property="og:image" content="${primaryImage}">
+<meta property="og:url" content="${productUrl}">
+<meta property="product:price:amount" content="${product.price}">
+<meta property="product:price:currency" content="INR">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="${escapeHtml(title)}">
+<meta name="twitter:description" content="${escapeHtml(description)}">
+<meta name="twitter:image" content="${primaryImage}">
+<script type="application/ld+json">${JSON.stringify(jsonLd)}</script>
+</head>
+<body>
+<h1>${escapeHtml(product.name)}</h1>
+<img src="${primaryImage}" alt="${escapeHtml(product.name)}" width="600">
+<p>${escapeHtml(description)}</p>
+<p>Price: ₹${product.price} INR</p>
+<p><a href="${productUrl}">View and order on ${SITE_NAME}</a></p>
+</body>
+</html>`;
 
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    res.setHeader('Cache-Control', 'public, s-maxage=600, stale-while-revalidate=3600');
     res.send(html);
   } catch (error) {
     console.error('SEO Interceptor Error:', error);

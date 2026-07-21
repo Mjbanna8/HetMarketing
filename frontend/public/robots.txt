@@ -1,10 +1,40 @@
+# hetmarketing.tech robots.txt
+
 User-agent: *
 Allow: /
-Disallow: /admin
-Disallow: /login
-Disallow: /dashboard
 Disallow: /api/
-Disallow: /private/
-Disallow: /404
-Disallow: /500
-Sitemap: https://hetmarketing.tech/sitemap.xml
+Disallow: /admin
+Disallow: /admin/
+Disallow: /login
+Disallow: /register
+Disallow: /forgot-password
+Disallow: /reset-password/
+Disallow: /account
+Disallow: /account/
+Disallow: /order-confirm/
+Disallow: /*?*utm_
+Disallow: /*?*fbclid=
+
+# AI crawlers — explicitly welcome (AEO)
+User-agent: GPTBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Claude-Web
+Allow: /
+
+User-agent: anthropic-ai
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: CCBot
+Allow: /
+
+Sitemap: https://www.hetmarketing.tech/sitemap.xml

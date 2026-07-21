@@ -7,6 +7,8 @@ import { productsApi, authApi } from '../api';
 import type { Product } from '../types';
 import { formatINR } from '../utils';
 import toast from 'react-hot-toast';
+import { Helmet } from 'react-helmet-async';
+import { generateOrganizationSchema, generateWebSiteSchema } from '../utils/seoUtils';
 
 function Header(): React.ReactElement {
   const { user, isAuthenticated, logout: authLogout } = useAuthStore();
@@ -296,6 +298,11 @@ export default function CustomerLayout(): React.ReactElement {
 
   return (
     <div className="min-h-screen flex flex-col">
+      {/* Sitewide structured data: Organization + WebSite (SearchAction) */}
+      <Helmet>
+        <script type="application/ld+json">{JSON.stringify(generateOrganizationSchema())}</script>
+        <script type="application/ld+json">{JSON.stringify(generateWebSiteSchema())}</script>
+      </Helmet>
       <Header />
       <main className="flex-1 pb-16 md:pb-0">
         <Outlet />

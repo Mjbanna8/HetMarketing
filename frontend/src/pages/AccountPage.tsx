@@ -7,6 +7,7 @@ import { useAuthStore } from '../store';
 import { useRequireAuth } from '../hooks';
 import { Spinner, PageLoader } from '../components/Shared';
 import toast from 'react-hot-toast';
+import { SEO } from '../components/Shared/SEO';
 
 const profileSchema = z.object({
   fullName: z.string().min(2).max(100).optional(),
@@ -54,6 +55,7 @@ export default function AccountPage(): React.ReactElement {
 
   return (
     <div className="container-page py-8 md:py-12">
+      <SEO title="My Account" noindex />
       <h1 className="text-2xl md:text-3xl font-bold text-surface-900 mb-8">My Account</h1>
       <div className="max-w-lg">
         <div className="card p-8">

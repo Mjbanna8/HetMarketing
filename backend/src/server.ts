@@ -35,7 +35,7 @@ app.use(
         scriptSrc: ["'self'", "'unsafe-inline'"],
         styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
         fontSrc: ["'self'", 'https://fonts.gstatic.com'],
-        imgSrc: ["'self'", 'data:', 'https://res.cloudinary.com', 'https://*.cloudinary.com'],
+        imgSrc: ["'self'", 'data:', 'https://res.cloudinary.com', 'https://*.cloudinary.com', 'https://*.digitaloceanspaces.com', 'https://*.cdn.digitaloceanspaces.com'],
         connectSrc: ["'self'", config.frontendUrl, 'https://hetmarketing.tech', 'https://www.hetmarketing.tech'],
       },
     },

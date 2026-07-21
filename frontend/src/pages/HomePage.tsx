@@ -6,6 +6,8 @@ import { ProductCard, ProductGridSkeleton, EmptyState } from '../components/Shar
 import { MarqueeOffers } from '../components/MarqueeOffers';
 import { ErrorBoundary } from '../components/ErrorBoundary';
 import { formatINR, getRecentlyViewed } from '../utils';
+import { SEO } from '../components/Shared/SEO';
+import { generateLocalBusinessSchema, SITE_URL } from '../utils/seoUtils';
 
 export default function HomePage(): React.ReactElement {
   // Independent states for each section
@@ -72,6 +74,12 @@ export default function HomePage(): React.ReactElement {
 
   return (
     <div className="space-y-4">
+      <SEO
+        title="Shop Online & Order on WhatsApp"
+        description="Het Marketing — IT services & online store in Rajkot. Browse curated products, see live offers, and order instantly on WhatsApp. Fast, simple, trusted."
+        url={`${SITE_URL}/`}
+        jsonLd={generateLocalBusinessSchema()}
+      />
       {/* Hero Section */}
       <section 
         className="relative min-h-[80vh] flex items-center bg-cover bg-center bg-no-repeat text-white overflow-hidden"

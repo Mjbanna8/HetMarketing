@@ -3,6 +3,8 @@ import { useSearchParams } from 'react-router-dom';
 import { productsApi } from '../api';
 import type { Product } from '../types';
 import { ProductCard, ProductGridSkeleton, EmptyState } from '../components/Shared';
+import { SEO } from '../components/Shared/SEO';
+import { SITE_URL } from '../utils/seoUtils';
 
 export default function SearchPage(): React.ReactElement {
   const [searchParams] = useSearchParams();
@@ -20,6 +22,11 @@ export default function SearchPage(): React.ReactElement {
 
   return (
     <div className="container-page py-8 md:py-12">
+      <SEO
+        title={query ? `Search: ${query}` : 'Search Products'}
+        description="Search the Het Marketing catalog and order your favourites on WhatsApp."
+        url={`${SITE_URL}/search`}
+      />
       <h1 className="text-2xl md:text-3xl font-bold text-surface-900 mb-2">Search Results</h1>
       {query && <p className="text-surface-500 mb-8">Showing results for &ldquo;{query}&rdquo;</p>}
       {loading ? <ProductGridSkeleton count={8} /> : products.length > 0 ? (

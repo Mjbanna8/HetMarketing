@@ -1,5 +1,6 @@
-import React, { Suspense, lazy } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import React, { Suspense, lazy, useEffect } from 'react';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { trackPageView } from './lib/gtm';
 import { Toaster } from 'react-hot-toast';
 import { useInitializeAuth, useInitializeAdminAuth, useLoadSettings } from './hooks';
 import { ErrorBoundary } from './components/ErrorBoundary';
@@ -32,6 +33,19 @@ const AdminSettingsPage = lazy(() => import('./pages/admin/AdminSettingsPage'));
 const AdminUsersPage = lazy(() => import('./pages/admin/UsersPage'));
 const AdminAboutPage = lazy(() => import('./pages/admin/AdminAboutPage'));
 
+// SPA virtual pageviews: pushes page_view to dataLayer on every route change (GTM/GA4)
+function RouteTracker(): null {
+  const location = useLocation();
+  useEffect(() => {
+    // Defer so document.title (set via react-helmet) is updated first
+    const id = window.setTimeout(() => {
+      trackPageView(location.pathname + location.search, document.title);
+    }, 100);
+    return () => window.clearTimeout(id);
+  }, [location.pathname, location.search]);
+  return null;
+}
+
 function AppInitializer({ children }: { children: React.ReactNode }): React.ReactElement {
   useInitializeAuth();
   useInitializeAdminAuth();
@@ -42,6 +56,7 @@ function AppInitializer({ children }: { children: React.ReactNode }): React.Reac
 export default function App(): React.ReactElement {
   return (
     <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+      <RouteTracker />
       <AppInitializer>
         <ErrorBoundary>
           <Suspense fallback={<PageLoader />}>

@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { settingsApi } from '../api';
+import { SEO } from '../components/Shared/SEO';
+import { generateLocalBusinessSchema, generateBreadcrumbSchema, SITE_URL } from '../utils/seoUtils';
 
 // Default copy – shown immediately while fetch is in-flight (no flash of empty)
 const defaults: Record<string, string> = {
@@ -55,6 +57,12 @@ export default function AboutUs(): React.ReactElement {
 
   return (
     <div className="bg-surface-50 min-h-screen">
+      <SEO
+        title="About Us — IT Services & WhatsApp Commerce, Rajkot"
+        description="Het Marketing is a DPIIT-recognized startup in Rajkot, Gujarat offering IT services, web development and a curated WhatsApp-commerce store."
+        url={`${SITE_URL}/about`}
+        jsonLd={[generateLocalBusinessSchema(), generateBreadcrumbSchema([{ name: 'Home', url: `${SITE_URL}/` }, { name: 'About Us', url: `${SITE_URL}/about` }])]}
+      />
 
       {/* ── Hero ──────────────────────────────────────────────── */}
       <section className="container-page py-16 md:py-24">

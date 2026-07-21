@@ -3,6 +3,8 @@ import { useParams, useSearchParams } from 'react-router-dom';
 import { productsApi, categoriesApi } from '../api';
 import type { Product, Category } from '../types';
 import { ProductCard, ProductGridSkeleton, EmptyState } from '../components/Shared';
+import { SEO } from '../components/Shared/SEO';
+import { generateItemListSchema, generateBreadcrumbSchema, SITE_URL } from '../utils/seoUtils';
 
 export default function ProductsPage(): React.ReactElement {
   const { slug: categorySlug } = useParams<{ slug: string }>();
@@ -92,6 +94,21 @@ export default function ProductsPage(): React.ReactElement {
 
   return (
     <div className="container-page py-8 md:py-12">
+      <SEO
+        title={activeCategory ? `${activeCategory.name} — Buy Online` : 'All Products — Shop Online'}
+        description={activeCategory
+          ? `Shop ${activeCategory.name} at Het Marketing. Quality products at fair prices — order in seconds on WhatsApp with doorstep delivery.`
+          : 'Browse the full Het Marketing catalog. Quality products at fair prices — order in seconds on WhatsApp with doorstep delivery.'}
+        url={activeCategory ? `${SITE_URL}/products/category/${activeCategory.slug}` : `${SITE_URL}/products`}
+        jsonLd={[
+          generateItemListSchema(products, activeCategory ? activeCategory.name : 'All Products'),
+          generateBreadcrumbSchema(
+            activeCategory
+              ? [{ name: 'Home', url: `${SITE_URL}/` }, { name: 'Products', url: `${SITE_URL}/products` }, { name: activeCategory.name, url: `${SITE_URL}/products/category/${activeCategory.slug}` }]
+              : [{ name: 'Home', url: `${SITE_URL}/` }, { name: 'Products', url: `${SITE_URL}/products` }]
+          ),
+        ]}
+      />
       <div className="flex flex-col md:flex-row gap-8">
         {/* Sidebar Filters */}
         <aside className="hidden md:block w-full md:w-64 shrink-0">

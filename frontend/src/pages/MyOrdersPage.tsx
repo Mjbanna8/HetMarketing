@@ -5,6 +5,7 @@ import type { Order } from '../types';
 import { useRequireAuth } from '../hooks';
 import { formatINR, formatDateIST } from '../utils';
 import { StatusBadge, PageLoader, EmptyState } from '../components/Shared';
+import { SEO } from '../components/Shared/SEO';
 
 export default function MyOrdersPage(): React.ReactElement {
   const isAuth = useRequireAuth();
@@ -22,6 +23,7 @@ export default function MyOrdersPage(): React.ReactElement {
 
   return (
     <div className="container-page py-8 md:py-12">
+      <SEO title="My Orders" noindex />
       <h1 className="text-2xl md:text-3xl font-bold text-surface-900 mb-8">My Orders</h1>
       {orders.length === 0 ? (
         <EmptyState title="No orders yet" message="You haven't placed any orders. Start shopping and order via WhatsApp!" action={{ label: 'Browse Products', href: '/products' }} />

@@ -5,6 +5,7 @@ import type { Order } from '../types';
 import { useRequireAuth } from '../hooks';
 import { formatINR, formatDateIST } from '../utils';
 import { StatusBadge, PageLoader } from '../components/Shared';
+import { SEO } from '../components/Shared/SEO';
 
 export default function OrderConfirmPage(): React.ReactElement {
   const { id } = useParams<{ id: string }>();
@@ -24,6 +25,7 @@ export default function OrderConfirmPage(): React.ReactElement {
 
   return (
     <div className="container-page py-8 md:py-12">
+      <SEO title="Order Confirmed" noindex />
       <div className="max-w-lg mx-auto text-center">
         <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-green-50 flex items-center justify-center animate-scale-in">
           <svg className="w-10 h-10 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
