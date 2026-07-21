@@ -16,6 +16,8 @@ A full-stack e-commerce platform where customers browse products and place order
 | Auth | JWT (access + refresh tokens) + bcrypt |
 | Images | DigitalOcean Spaces (S3) + sharp (WebP) |
 | WhatsApp | wa.me deep-link (client-side) |
+| Analytics | Google Tag Manager (`GTM-5B7PB4C3`) — GA4 fires inside the container |
+| SEO/AEO | Dynamic sitemap + llms.txt (Vercel functions), JSON-LD, bot dynamic rendering |
 
 ## Getting Started
 
@@ -105,6 +107,8 @@ Visit:
 
 ```
 ├── frontend/
+│   ├── api/          # Vercel serverless functions (sitemap.xml, llms.txt, llms-full.txt)
+│   ├── vercel.json   # SPA rewrites, apex→www 301, bot dynamic-rendering rewrite
 │   ├── src/
 │   │   ├── api/          # Axios client + typed API calls
 │   │   ├── components/   # Shared UI components + Layouts
@@ -162,6 +166,15 @@ All uploads go through `backend/src/utils/spaces.ts`:
   - `hetmarketing/about/<uuid>.webp` — about page photos
 - Old images are deleted from Spaces on replacement or hard-delete (non-throwing)
 
+### SEO & AEO (AI Engine Optimization)
+- **Dynamic `sitemap.xml`** — Vercel function fed by the live product API (`lastmod` from `updatedAt`, 1h edge cache, never 500s)
+- **`llms.txt` / `llms-full.txt`** — [llmstxt.org](https://llmstxt.org)-spec company + live catalog reference for AI assistants (ChatGPT, Claude, Perplexity)
+- **`robots.txt`** — AI crawlers (GPTBot, ClaudeBot, PerplexityBot, Google-Extended, CCBot…) explicitly allowed
+- **Dynamic rendering for social scrapers** — WhatsApp/Facebook/Twitter/LinkedIn user-agents hitting `/products/:slug` are proxied (same URL) to the backend's `/seo-products/:slug`, which serves fully-rendered OG/Twitter meta + Product JSON-LD; humans and Googlebot get the SPA
+- **JSON-LD everywhere** — Product, BreadcrumbList, ItemList, Organization, WebSite (+SearchAction), LocalBusiness
+- **Canonicals + unique titles/descriptions** per page; `noindex` on account/order pages; apex 301s to `www`
+- **GTM** with SPA virtual pageviews and GA4 ecommerce events (`add_to_cart`, `purchase`, `generate_lead` with INR values) — see `frontend/src/lib/gtm.ts`
+
 ### Security
 - JWT access (15min) + refresh (30d, httpOnly cookie) tokens
 - bcrypt (cost factor 12) password hashing
@@ -211,21 +224,18 @@ Each script logs `✅ migrated` or `❌ failed` per record. Failed rows (e.g. al
 
 ## Deployment
 
-### Frontend → Vercel
-```bash
-cd frontend
-npm run build
-# Deploy dist/ folder to Vercel
-# Set VITE_API_URL env var in Vercel dashboard
-```
+Production runs as a split deployment — see **[DEPLOYMENT.md](DEPLOYMENT.md)** for the full runbook (topology, rollback, verification, gotchas).
 
-### Backend → Railway / Render
+| Component | Where | How |
+|---|---|---|
+| Frontend (`www.hetmarketing.tech`) | Vercel (project root `frontend/`) | Auto-deploys on every push to `main` |
+| Backend (`api.hetmarketing.tech`) | DigitalOcean droplet, nginx → pm2 | SSH in, then `cd /var/www/HetMarketing && ./deploy.sh` |
+
+Quick post-deploy sanity check:
 ```bash
-cd backend
-npm run build
-# Deploy with Railway or Render
-# Set all env vars (DATABASE_URL, DO_SPACES_*, JWT_*, SMTP_*, etc.) in dashboard
-# Run: npx prisma migrate deploy (on first deploy)
+curl -s https://api.hetmarketing.tech/api/health
+curl -s https://www.hetmarketing.tech/sitemap.xml | grep -c "<loc>"
+curl -s -A "WhatsApp/2.0" https://www.hetmarketing.tech/products/<slug> | grep og:title
 ```
 
 ## License
